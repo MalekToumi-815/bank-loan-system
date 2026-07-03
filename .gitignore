@@ -1,0 +1,38 @@
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ (if ever used)
+.idea/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+*.env
+
+# Build files
+*.jar
+*.war
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker
+*.pid
