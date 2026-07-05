@@ -34,11 +34,11 @@
         </dependency>
 
 
-        <!-- Security -->
+        <!-- Security 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+        </dependency>-->
 
 
         <!-- Health checks for Consul -->
