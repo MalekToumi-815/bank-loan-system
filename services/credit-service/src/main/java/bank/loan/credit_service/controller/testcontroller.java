@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class testcontroller {
     @GetMapping("")
     public String getMethodName() {
-        return new String("Hello World");
+        return new String("Hello credit-service");
     }
     
 }
