@@ -61,11 +61,11 @@ public class UserController {
 	}
 
 	@PostMapping("/authenticate")
-	public ResponseEntity<Map<String, String>> authenticate(@RequestBody AuthRequest authRequest) {
+	public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest) {
 		return userService.authenticate(authRequest.email(), authRequest.password())
-				.map(user -> ResponseEntity.ok(statusBody("SUCCESS", "Authentication successful")))
+				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "Authentication successful", user.getId())))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-						.body(statusBody("FAILED", "Invalid credentials")));
+						.body(new AuthResponse("FAILED", "Invalid credentials", null)));
 	}
 
 	@PostMapping("/{id}/change-password")
@@ -96,6 +96,9 @@ public class UserController {
 	}
 
 	private record ChangePasswordRequest(String oldPassword, String newPassword) {
+	}
+
+	private record AuthResponse(String status, String message, Long userId) {
 	}
 
 	private record UserResponse(Long id, String name, String surname, String cin, String phone, String email) {
