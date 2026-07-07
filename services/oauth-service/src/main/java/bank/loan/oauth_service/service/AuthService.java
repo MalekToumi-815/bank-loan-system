@@ -1,7 +1,5 @@
 package bank.loan.oauth_service.service;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -23,10 +21,13 @@ public class AuthService {
         this.internalSecret = internalSecret;
     }
 
-    public Map<String, String> issueTokens(Long userId) {
-        return Map.of(
-                "accessToken", jwtService.generateAccessToken(userId),
-                "refreshToken", jwtService.generateRefreshToken(userId)
+    public TokenResponse issueTokens(Long userId) {
+        return new TokenResponse(
+                jwtService.generateAccessToken(userId),
+                jwtService.generateRefreshToken(userId),
+                "Bearer",
+                jwtService.getAccessTokenExpiresInSeconds(),
+                jwtService.getRefreshTokenExpiresInSeconds()
         );
     }
 
@@ -53,6 +54,14 @@ public class AuthService {
 
     public boolean isTokenValid(String token) {
         return jwtService.isTokenValid(token);
+    }
+
+    public record TokenResponse(
+            String accessToken,
+            String refreshToken,
+            String tokenType,
+            long accessTokenExpiresIn,
+            long refreshTokenExpiresIn) {
     }
 
     private record AccountAuthRequest(String email, String password) {

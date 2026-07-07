@@ -35,6 +35,14 @@ public class JwtService {
         return generateToken(userId, refreshTokenExpiration);
     }
 
+    public long getAccessTokenExpiresInSeconds() {
+        return accessTokenExpiration / 1000;
+    }
+
+    public long getRefreshTokenExpiresInSeconds() {
+        return refreshTokenExpiration / 1000;
+    }
+
     public Long extractUserId(String token) {
         return Long.valueOf(getClaims(token).get("userId", Long.class));
     }
