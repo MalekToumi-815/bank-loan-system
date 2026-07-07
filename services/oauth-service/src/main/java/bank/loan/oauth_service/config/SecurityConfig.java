@@ -32,7 +32,7 @@ public class SecurityConfig {
             .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authEx) -> {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Access Denied\"}");
+                response.getWriter().write("{\"error\":\"Access Denied oauth\"}");
             }));
         return http.build();
     }

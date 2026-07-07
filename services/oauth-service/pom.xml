@@ -55,6 +55,13 @@
         </dependency>
 
 
+        <!-- Client-side load balancing for service-name based HTTP calls -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
