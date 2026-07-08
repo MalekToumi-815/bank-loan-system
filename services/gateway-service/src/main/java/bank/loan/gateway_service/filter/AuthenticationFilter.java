@@ -48,7 +48,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             log.info("Incoming request: {} {}", method, path);
 
             // Allow registration without JWT
-            if (method.equals("POST") && path.equals("/account/users")) {
+            if (method.equals("POST") && path.equals("/users")) {
                 log.info("Skipping authentication for user registration");
                 return chain.filter(exchange);
             }
