@@ -3,9 +3,13 @@ package bank.loan.account_service.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import bank.loan.account_service.dto.AuthResponse;
+import bank.loan.account_service.dto.UserResponse;
 import bank.loan.account_service.model.User;
 import bank.loan.account_service.repository.UserRepository;
 
@@ -26,12 +30,29 @@ public class UserService {
 		return userRepository.save(user);
 	}
 
-	public List<User> getAllUsers() {
-		return userRepository.findAll();
+	public ResponseEntity<java.util.Map<String, String>> createUserResponse(User user) {
+		try {
+			createUser(user);
+			return ResponseEntity.status(HttpStatus.CREATED)
+					.body(java.util.Map.of("status", "SUCCESS", "message", "User created"));
+		} catch (IllegalArgumentException ex) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(java.util.Map.of("status", "FAILED", "message", ex.getMessage()));
+		}
 	}
 
-	public Optional<User> getUserById(Long id) {
-		return userRepository.findById(id);
+	public List<UserResponse> getAllUsers() {
+		return userRepository.findAll().stream().map(this::toResponse).toList();
+	}
+
+	public Optional<UserResponse> getUserById(Long id) {
+		return userRepository.findById(id).map(this::toResponse);
+	}
+
+	public ResponseEntity<UserResponse> getUserByIdResponse(Long id) {
+		return userRepository.findById(id)
+				.map(user -> ResponseEntity.ok(toResponse(user)))
+				.orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
 
 	public Optional<User> getUserByEmail(String email) {
@@ -58,9 +79,28 @@ public class UserService {
 		});
 	}
 
+	public ResponseEntity<java.util.Map<String, String>> updateUserResponse(Long id, User updatedUser) {
+		try {
+			return updateUser(id, updatedUser)
+					.map(user -> ResponseEntity.ok(java.util.Map.of("status", "SUCCESS", "message", "User updated")))
+					.orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+							.body(java.util.Map.of("status", "FAILED", "message", "User not found")));
+		} catch (IllegalArgumentException ex) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(java.util.Map.of("status", "FAILED", "message", ex.getMessage()));
+		}
+	}
+
 	public Optional<User> authenticate(String email, String rawPassword) {
 		return userRepository.findByEmail(email)
 				.filter(user -> passwordEncoder.matches(rawPassword, user.getPassword()));
+	}
+
+	public ResponseEntity<AuthResponse> authenticateResponse(String email, String rawPassword) {
+		return authenticate(email, rawPassword)
+				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "Authentication successful", user.getId())))
+				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(new AuthResponse("FAILED", "Invalid credentials", null)));
 	}
 
 	public boolean changePassword(Long userId, String oldPassword, String newPassword) {
@@ -79,11 +119,30 @@ public class UserService {
 		return true;
 	}
 
+	public ResponseEntity<java.util.Map<String, String>> changePasswordResponse(Long userId, String oldPassword,
+			String newPassword) {
+		if (!changePassword(userId, oldPassword, newPassword)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(java.util.Map.of("status", "FAILED", "message", "Invalid user ID or password"));
+		}
+		return ResponseEntity.ok(java.util.Map.of("status", "SUCCESS", "message", "Password changed successfully"));
+	}
+
 	private void validateEmailAvailability(String email, Long currentUserId) {
 		userRepository.findByEmail(email).ifPresent(existing -> {
 			if (currentUserId == null || !existing.getId().equals(currentUserId)) {
 				throw new IllegalArgumentException("Email already exists");
 			}
 		});
+	}
+
+	private UserResponse toResponse(User user) {
+		return new UserResponse(
+				user.getId(),
+				user.getName(),
+				user.getSurname(),
+				user.getCin(),
+				user.getPhone(),
+				user.getEmail());
 	}
 }
