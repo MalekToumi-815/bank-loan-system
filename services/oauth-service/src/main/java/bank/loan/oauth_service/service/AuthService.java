@@ -36,7 +36,8 @@ public class AuthService {
                 jwtService.generateRefreshToken(userId),
                 "Bearer",
                 jwtService.getAccessTokenExpiresInSeconds(),
-                jwtService.getRefreshTokenExpiresInSeconds()
+                jwtService.getRefreshTokenExpiresInSeconds(),
+                userId
         );
     }
 
@@ -107,7 +108,8 @@ public class AuthService {
             String refreshToken,
             String tokenType,
             long accessTokenExpiresIn,
-            long refreshTokenExpiresIn) {
+            long refreshTokenExpiresIn,
+            long userId) {
     }
 
     private record AccountAuthRequest(String email) {
