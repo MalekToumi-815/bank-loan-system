@@ -46,7 +46,7 @@ public class UserController {
 
 	@PostMapping("/authenticate")
 	public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest) {
-		return userService.authenticateResponse(authRequest.email(), authRequest.password());
+		return userService.authenticateResponse(authRequest.email());
 	}
 
 	@PostMapping("/{id}/change-password")
@@ -55,7 +55,7 @@ public class UserController {
 		return userService.changePasswordResponse(id, request.oldPassword(), request.newPassword());
 	}
 
-	private record AuthRequest(String email, String password) {
+	private record AuthRequest(String email) {
 	}
 
 	private record ChangePasswordRequest(String oldPassword, String newPassword) {

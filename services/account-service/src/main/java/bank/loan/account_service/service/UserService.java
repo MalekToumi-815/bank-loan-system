@@ -55,10 +55,6 @@ public class UserService {
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
 
-	public Optional<User> getUserByEmail(String email) {
-		return userRepository.findByEmail(email);
-	}
-
 	public Optional<User> updateUser(Long id, User updatedUser) {
 		return userRepository.findById(id).map(existingUser -> {
 
@@ -91,14 +87,9 @@ public class UserService {
 		}
 	}
 
-	public Optional<User> authenticate(String email, String rawPassword) {
+	public ResponseEntity<AuthResponse> authenticateResponse(String email) {
 		return userRepository.findByEmail(email)
-				.filter(user -> passwordEncoder.matches(rawPassword, user.getPassword()));
-	}
-
-	public ResponseEntity<AuthResponse> authenticateResponse(String email, String rawPassword) {
-		return authenticate(email, rawPassword)
-				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "Authentication successful", user.getId())))
+				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "User found", user.getId(), user.getPassword())))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}
 
