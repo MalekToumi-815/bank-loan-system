@@ -30,9 +30,7 @@ public class SecurityConfig {
             .addFilterBefore(new InternalHeaderFilter(expectedSecret), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authEx) -> {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Access Denied oauth\"}");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }));
         return http.build();
     }
