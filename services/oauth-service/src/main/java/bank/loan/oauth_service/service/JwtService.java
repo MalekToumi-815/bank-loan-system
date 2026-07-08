@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -28,11 +29,11 @@ public class JwtService {
     }
 
     public String generateAccessToken(Long userId) {
-        return generateToken(userId, accessTokenExpiration);
+        return generateToken(userId, accessTokenExpiration, "ACCESS");
     }
 
     public String generateRefreshToken(Long userId) {
-        return generateToken(userId, refreshTokenExpiration);
+        return generateToken(userId, refreshTokenExpiration, "REFRESH");
     }
 
     public long getAccessTokenExpiresInSeconds() {
@@ -56,13 +57,14 @@ public class JwtService {
         }
     }
 
-    private String generateToken(Long userId, long expirationMillis) {
+    private String generateToken(Long userId, long expirationMillis, String type) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
-
+    
         return Jwts.builder()
                 .subject("user")
                 .claim("userId", userId)
+                .claim("type", type)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(signingKey)
@@ -75,5 +77,19 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public boolean isRefreshToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(signingKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return "REFRESH".equals(claims.get("type", String.class));
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

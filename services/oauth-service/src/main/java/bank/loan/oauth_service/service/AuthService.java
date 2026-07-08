@@ -70,6 +70,9 @@ public class AuthService {
         return jwtService.isTokenValid(token);
     }
 
+    public boolean isRefreshToken(String token) {
+        return jwtService.isRefreshToken(token);
+    }
     public ResponseEntity<TokenResponse> loginResponse(String email, String password) {
         try {
             Long userId = authenticate(email, password);
@@ -91,7 +94,7 @@ public class AuthService {
     }
 
     public ResponseEntity<TokenResponse> refreshResponse(String token) {
-        if (!isTokenValid(token)) {
+        if (!isTokenValid(token) || !isRefreshToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
