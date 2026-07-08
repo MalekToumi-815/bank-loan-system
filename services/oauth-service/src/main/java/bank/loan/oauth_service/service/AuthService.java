@@ -66,15 +66,13 @@ public class AuthService {
             Long userId = authenticate(email, password);
             return ResponseEntity.ok(issueTokens(userId));
         } catch (HttpClientErrorException.Unauthorized ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new TokenResponse(null, null, "Bearer", 0L, 0L));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
     public ResponseEntity<ValidationResponse> validateResponse(String token) {
         if (!isTokenValid(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ValidationResponse("FAILED", "Invalid token", null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         Long userId = extractUserIdFromToken(token);
@@ -83,8 +81,7 @@ public class AuthService {
 
     public ResponseEntity<TokenResponse> refreshResponse(String token) {
         if (!isTokenValid(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new TokenResponse(null, null, "Bearer", 0L, 0L));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         Long userId = extractUserIdFromToken(token);

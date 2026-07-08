@@ -99,8 +99,7 @@ public class UserService {
 	public ResponseEntity<AuthResponse> authenticateResponse(String email, String rawPassword) {
 		return authenticate(email, rawPassword)
 				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "Authentication successful", user.getId())))
-				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-						.body(new AuthResponse("FAILED", "Invalid credentials", null)));
+				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}
 
 	public boolean changePassword(Long userId, String oldPassword, String newPassword) {
