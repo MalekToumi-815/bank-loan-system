@@ -1,9 +1,14 @@
 package bank.loan.oauth_service.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.HttpClientErrorException;
+
+import bank.loan.oauth_service.dto.ValidationResponse;
 
 @Service
 public class AuthService {
@@ -54,6 +59,36 @@ public class AuthService {
 
     public boolean isTokenValid(String token) {
         return jwtService.isTokenValid(token);
+    }
+
+    public ResponseEntity<TokenResponse> loginResponse(String email, String password) {
+        try {
+            Long userId = authenticate(email, password);
+            return ResponseEntity.ok(issueTokens(userId));
+        } catch (HttpClientErrorException.Unauthorized ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new TokenResponse(null, null, "Bearer", 0L, 0L));
+        }
+    }
+
+    public ResponseEntity<ValidationResponse> validateResponse(String token) {
+        if (!isTokenValid(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ValidationResponse("FAILED", "Invalid token", null));
+        }
+
+        Long userId = extractUserIdFromToken(token);
+        return ResponseEntity.ok(new ValidationResponse("SUCCESS", "Token is valid", userId));
+    }
+
+    public ResponseEntity<TokenResponse> refreshResponse(String token) {
+        if (!isTokenValid(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new TokenResponse(null, null, "Bearer", 0L, 0L));
+        }
+
+        Long userId = extractUserIdFromToken(token);
+        return ResponseEntity.ok(issueTokens(userId));
     }
 
     public record TokenResponse(
