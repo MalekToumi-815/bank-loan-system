@@ -29,8 +29,8 @@ public class GatewayRoutesConfig {
                     .addRequestHeader("X-Internal-Secret", internalSecret))
                 .uri("lb://credit-service"))
 
-            .route("oauth-service", r -> r
-                .path("/oauth/**")
+            .route("oauth-public", r -> r
+                .path("/oauth/login", "/oauth/refresh")
                 .filters(f -> f
                     .stripPrefix(1)
                     .addRequestHeader("X-Internal-Secret", internalSecret))
