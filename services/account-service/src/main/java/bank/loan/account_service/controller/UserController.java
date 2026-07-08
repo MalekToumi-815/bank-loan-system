@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,8 +41,12 @@ public class UserController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<java.util.Map<String, String>> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
-		return userService.updateUserResponse(id, updatedUser);
+	public ResponseEntity<java.util.Map<String, String>> updateUser(
+			@PathVariable Long id,
+			@RequestHeader("X-User-Id") Long userId,
+			@RequestBody User updatedUser) {
+
+		return userService.updateUserResponse(id, userId, updatedUser);
 	}
 
 	@PostMapping("/authenticate")
@@ -51,8 +56,9 @@ public class UserController {
 
 	@PostMapping("/{id}/change-password")
 	public ResponseEntity<java.util.Map<String, String>> changePassword(@PathVariable Long id,
-			@RequestBody ChangePasswordRequest request) {
-		return userService.changePasswordResponse(id, request.oldPassword(), request.newPassword());
+		@RequestHeader("X-User-Id") Long userId,	
+		@RequestBody ChangePasswordRequest request) {
+		return userService.changePasswordResponse(id, userId, request.oldPassword(), request.newPassword());
 	}
 
 	private record AuthRequest(String email) {

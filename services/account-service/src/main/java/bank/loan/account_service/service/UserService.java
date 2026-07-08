@@ -1,6 +1,7 @@
 package bank.loan.account_service.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -75,16 +76,40 @@ public class UserService {
 		});
 	}
 
-	public ResponseEntity<java.util.Map<String, String>> updateUserResponse(Long id, User updatedUser) {
-		try {
-			return updateUser(id, updatedUser)
-					.map(user -> ResponseEntity.ok(java.util.Map.of("status", "SUCCESS", "message", "User updated")))
-					.orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-							.body(java.util.Map.of("status", "FAILED", "message", "User not found")));
-		} catch (IllegalArgumentException ex) {
-			return ResponseEntity.status(HttpStatus.CONFLICT)
-					.body(java.util.Map.of("status", "FAILED", "message", ex.getMessage()));
-		}
+	public ResponseEntity<Map<String, String>> updateUserResponse(
+	        Long id,
+	        Long userId,
+	        User updatedUser) {
+			
+	    try {
+	        if (!id.equals(userId)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                    .body(Map.of(
+	                            "status", "FAILED",
+	                            "message", "You cannot update another user's account"
+	                    ));
+	        }
+		
+	        return updateUser(id, updatedUser)
+	                .map(user -> ResponseEntity.ok(
+	                        Map.of(
+	                                "status", "SUCCESS",
+	                                "message", "User updated"
+	                        )
+	                ))
+	                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                        .body(Map.of(
+	                                "status", "FAILED",
+	                                "message", "User not found"
+	                        )));
+						
+	    } catch (IllegalArgumentException ex) {
+	        return ResponseEntity.status(HttpStatus.CONFLICT)
+	                .body(Map.of(
+	                        "status", "FAILED",
+	                        "message", ex.getMessage()
+	                ));
+	    }
 	}
 
 	public ResponseEntity<AuthResponse> authenticateResponse(String email) {
@@ -109,8 +134,15 @@ public class UserService {
 		return true;
 	}
 
-	public ResponseEntity<java.util.Map<String, String>> changePasswordResponse(Long userId, String oldPassword,
+	public ResponseEntity<java.util.Map<String, String>> changePasswordResponse(Long userId, Long id, String oldPassword,
 			String newPassword) {
+		if (!id.equals(userId)) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                    .body(Map.of(
+	                            "status", "FAILED",
+	                            "message", "You cannot update another user's account"
+	                    ));
+	        }
 		if (!changePassword(userId, oldPassword, newPassword)) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(java.util.Map.of("status", "FAILED", "message", "Invalid user ID or password"));
