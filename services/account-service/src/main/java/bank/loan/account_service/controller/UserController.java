@@ -8,12 +8,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import bank.loan.account_service.dto.AuthResponse;
 import bank.loan.account_service.dto.UserResponse;
 import bank.loan.account_service.model.User;
 import bank.loan.account_service.service.UserService;
+import bank.loan.account_service.model.Role;
+import bank.loan.account_service.model.Status;
 
 @RestController
 @RequestMapping("/users")
@@ -31,8 +34,10 @@ public class UserController {
 	}
 
 	@GetMapping
-	public java.util.List<UserResponse> getAllUsers() {
-		return userService.getAllUsers();
+	public java.util.List<UserResponse> getAllUsers(
+			@RequestParam(required = false) Role role,
+			@RequestParam(required = false) Status status) {
+		return userService.getAllUsers(role, status);
 	}
 
 	@GetMapping("/{id}")

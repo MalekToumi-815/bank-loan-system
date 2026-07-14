@@ -14,6 +14,8 @@ public class User {
     private String surname;
     private String cin;
     private String phone;
+    private Role role;
+    private Status status;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -23,13 +25,15 @@ public class User {
 
     public User() {}
 
-    public User(String name, String surname, String cin, String phone, String email, String password) {
+    public User(String name, String surname, String cin, String phone, String email, String password, Role role, Status status) {
         this.name = name;
         this.surname = surname;
         this.cin = cin;
         this.phone = phone;
         this.email = email;
+        this.role = role;
         this.password = password;
+        this.status = status;
     }
 
     public Long getId() {
@@ -84,5 +88,19 @@ public class User {
         this.password = password;
     }
 
-    
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }

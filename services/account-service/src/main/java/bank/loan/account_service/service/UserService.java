@@ -1,8 +1,11 @@
 package bank.loan.account_service.service;
 
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,8 @@ import bank.loan.account_service.dto.AuthResponse;
 import bank.loan.account_service.dto.UserResponse;
 import bank.loan.account_service.model.User;
 import bank.loan.account_service.repository.UserRepository;
+import bank.loan.account_service.model.Role;
+import bank.loan.account_service.model.Status;
 
 @Service
 public class UserService {
@@ -42,9 +47,21 @@ public class UserService {
 		}
 	}
 
-	public List<UserResponse> getAllUsers() {
-		return userRepository.findAll().stream().map(this::toResponse).toList();
-	}
+public List<UserResponse> getAllUsers(Role role, Status status) {
+    List<User> users;
+
+    if (role != null && status != null) {
+        users = userRepository.findByRoleAndStatus(role, status);
+    } else if (role != null) {
+        users = userRepository.findByRole(role);
+    } else if (status != null) {
+        users = userRepository.findByStatus(status);
+    } else {
+        users = userRepository.findAll();
+    }
+
+    return users.stream().map(this::toResponse).toList();
+}
 
 	public Optional<UserResponse> getUserById(Long id) {
 		return userRepository.findById(id).map(this::toResponse);
@@ -70,6 +87,12 @@ public class UserService {
 			}
 			if (updatedUser.getPhone() != null) {
 				existingUser.setPhone(updatedUser.getPhone());
+			}
+			if (updatedUser.getRole() != null) {
+				existingUser.setRole(updatedUser.getRole());
+			}
+			if (updatedUser.getStatus() != null) {
+				existingUser.setStatus(updatedUser.getStatus());
 			}
 
 			return userRepository.save(existingUser);
@@ -165,6 +188,8 @@ public class UserService {
 				user.getSurname(),
 				user.getCin(),
 				user.getPhone(),
-				user.getEmail());
+				user.getEmail(),
+				user.getRole(),
+				user.getStatus());
 	}
 }
