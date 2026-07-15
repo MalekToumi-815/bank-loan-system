@@ -29,16 +29,13 @@ public class Loan {
 
     private String workflowProcessInstanceId; // links to Flowable's running instance 
 
-    public Loan(Long clientId, Date submissionDate, float amount, LoanType type, int durationMonths, float interestRate,
-            LoanStatus status, String workflowProcessInstanceId) {
-        this.clientId = clientId;
+    public Loan(Date submissionDate, float amount, LoanType type, int durationMonths, float interestRate) {
         this.submissionDate = submissionDate;
         this.amount = amount;
         this.type = type;
         this.durationMonths = durationMonths;
         this.interestRate = interestRate;
-        this.status = status;
-        this.workflowProcessInstanceId = workflowProcessInstanceId;
+        this.status = LoanStatus.SUBMITTED; // default status
     }
 
     public Loan() {
