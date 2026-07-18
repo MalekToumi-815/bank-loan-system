@@ -52,6 +52,7 @@ public class LoanService {
     }
 
     public Loan linkWorkflowInstance(Long id, String processInstanceId) {
+        //TODO: Check existance of processInstanceId
         return loanRepository.findById(id)
                 .map(loan -> {
                     loan.setWorkflowProcessInstanceId(processInstanceId);

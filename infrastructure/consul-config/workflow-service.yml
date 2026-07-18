@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/workflow_db
+    username: postgres
+    password: ${SPRING_DATASOURCE_PASSWORD:mlk123}
+    driver-class-name: org.postgresql.Driver
+
+flowable:
+  # Automatically check the database and create Flowable tables on startup
+  database-schema-update: true
+  # Ensures async executors are enabled if you add timer events or async tasks later
+  async-executor-activate: true
+  # Toggles automatic deployment of processes found in the resources folder
+  check-process-definitions: true

@@ -58,6 +58,18 @@
             <artifactId>spring-cloud-starter-consul-config</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <version>7.1.0</version> 
+        </dependency>
+
+        <!-- PostgreSQL JDBC driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- Testing -->
         <dependency>
