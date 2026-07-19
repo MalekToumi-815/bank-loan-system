@@ -24,7 +24,7 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/health", "/error").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new InternalHeaderFilter(expectedSecret), UsernamePasswordAuthenticationFilter.class)
