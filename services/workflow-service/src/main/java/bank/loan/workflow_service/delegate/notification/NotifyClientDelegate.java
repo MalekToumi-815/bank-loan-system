@@ -9,7 +9,7 @@ public class NotifyClientDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
-        String Client = (String) execution.getVariable("client_id");
+        Long Client = (Long) execution.getVariable("client_id");
         System.out.println("[NOTIFICATION] Alerting Bank Client (" + Client + ") to check/correct the application.");
     }
 }

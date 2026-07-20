@@ -5,24 +5,34 @@ import java.util.List;
 import java.util.Map;
 
 import org.flowable.engine.RuntimeService;
+import org.springframework.beans.factory.annotation.Value;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import bank.loan.workflow_service.dto.TaskResponseDto;
 import bank.loan.workflow_service.dto.StartProcessRequest;
+import bank.loan.workflow_service.model.Role;
 
 @Service
 public class WorkflowService {
     private final RuntimeService runtimeService;
     private final TaskService taskService;
+    private final RestClient restClient;
+    private final String internalSecret;
 
-    public WorkflowService(RuntimeService runtimeService, TaskService taskService) {
+    public WorkflowService(RuntimeService runtimeService, TaskService taskService, RestClient.Builder restClientBuilder, @Value("${internal.shared-secret}") String internalSecret) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
+        this.restClient = restClientBuilder
+                .baseUrl("http://account-service") 
+                .build();
+        this.internalSecret = internalSecret;
     }
 
     public ResponseEntity<Map<String, String>> startWorkflow(StartProcessRequest request) {
@@ -64,4 +74,20 @@ public class WorkflowService {
         taskService.complete(taskId, variables);
         return ResponseEntity.noContent().build();
     }
+
+    //Fetching Active Users with a certain Role
+    public List<UserResponse> fetchUsers(Role role) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users")
+                        .queryParam("role", role)
+                        .queryParam("status", "ACTIVE")
+                        .build())
+                .headers(headers -> headers.set("X-Internal-Secret", internalSecret))
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<UserResponse>>() {});
+    }
+
+    // Shared DTO record
+    public record UserResponse(Long id, String name, String email) {}
 }

@@ -9,7 +9,7 @@ public class NotifyOfficerDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
-        String Officer = (String) execution.getVariable("loan_officer_id");
+        Long Officer = (Long) execution.getVariable("loan_officer_id");
         System.out.println("[NOTIFICATION] Alerting Bank Officer (" + Officer + ") to check/correct the application.");
     }
 }

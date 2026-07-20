@@ -9,7 +9,7 @@ public class NotifyReceptionistDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
-        String receptionist = (String) execution.getVariable("receptionist_id");
+        Long receptionist = (Long) execution.getVariable("receptionist_id");
         System.out.println("[NOTIFICATION] Alerting Bank Receptionist (" + receptionist + ") to check/correct the application.");
     }
 }
