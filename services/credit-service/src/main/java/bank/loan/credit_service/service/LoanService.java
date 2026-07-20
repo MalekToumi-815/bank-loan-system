@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import bank.loan.credit_service.dto.LoanRequest;
+import bank.loan.credit_service.dto.LoanResponse;
 import bank.loan.credit_service.model.Loan;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.model.Role;
@@ -94,7 +95,6 @@ public class LoanService {
                         .body(Map.of("status", "FAILED", "message", "User is not eligible for a loan"));
             }
             Loan loan = new Loan(
-                    loanrequest.submissionDate(),
                     loanrequest.amount(),
                     loanrequest.type(),
                     loanrequest.durationMonths(),
@@ -112,28 +112,31 @@ public class LoanService {
         }
     }
 
-    public ResponseEntity<LoanRequest> getLoanByIdResponse(Long id) {
+    public ResponseEntity<LoanResponse> getLoanByIdResponse(Long id) {
         Loan loan = getLoanById(id);
         if (loan == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(toLoanRequest(loan));
+        return ResponseEntity.ok(toLoanResponse(loan));
     }
 
-    public ResponseEntity<List<LoanRequest>> getAllLoansResponse() {
-        List<LoanRequest> loans = getAllLoans().stream()
-                .map(this::toLoanRequest)
+    public ResponseEntity<List<LoanResponse>> getAllLoansResponse() {
+        List<LoanResponse> loans = getAllLoans().stream()
+                .map(this::toLoanResponse)
                 .toList();
         return ResponseEntity.ok(loans);
     }
-
-    private LoanRequest toLoanRequest(Loan loan) {
-        return new LoanRequest(
+    
+    private LoanResponse toLoanResponse(Loan loan) {
+        return new LoanResponse(
+                loan.getId(),
                 loan.getSubmissionDate(),
                 loan.getAmount(),
                 loan.getType(),
                 loan.getDurationMonths(),
-                loan.getInterestRate());
+                loan.getInterestRate(),
+                loan.getWorkflowProcessInstanceId(),
+                loan.getStatus());
     }
 
     public ResponseEntity<Map<String, String>> updateLoanStatusResponse(Long id, LoanStatus status) {

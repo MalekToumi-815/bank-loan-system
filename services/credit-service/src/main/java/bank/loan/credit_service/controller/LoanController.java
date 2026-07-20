@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bank.loan.credit_service.dto.LoanRequest;
+import bank.loan.credit_service.dto.LoanResponse;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.service.LoanService;
 
@@ -35,12 +36,12 @@ public class LoanController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LoanRequest> getLoanById(@PathVariable Long id) {
+    public ResponseEntity<LoanResponse> getLoanById(@PathVariable Long id) {
         return loanService.getLoanByIdResponse(id);
     }
 
     @GetMapping
-    public ResponseEntity<List<LoanRequest>> getAllLoans() {
+    public ResponseEntity<List<LoanResponse>> getAllLoans() {
         return loanService.getAllLoansResponse();
     }
 

@@ -29,8 +29,8 @@ public class Loan {
 
     private String workflowProcessInstanceId; // links to Flowable's running instance 
 
-    public Loan(Date submissionDate, float amount, LoanType type, int durationMonths, float interestRate) {
-        this.submissionDate = submissionDate;
+    public Loan(float amount, LoanType type, int durationMonths, float interestRate) {
+        this.submissionDate = new Date();
         this.amount = amount;
         this.type = type;
         this.durationMonths = durationMonths;
