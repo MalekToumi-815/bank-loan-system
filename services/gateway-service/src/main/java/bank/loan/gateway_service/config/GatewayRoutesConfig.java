@@ -50,7 +50,6 @@ public class GatewayRoutesConfig {
             .route("workflow-service", r -> r
                 .path("/workflow/**")
                 .filters(f -> f
-                    .stripPrefix(1)
                     .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
                     .addRequestHeader("X-Internal-Secret", internalSecret))
                 .uri("lb://workflow-service"))
