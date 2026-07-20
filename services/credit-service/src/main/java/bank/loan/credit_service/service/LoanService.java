@@ -30,10 +30,6 @@ public class LoanService {
     }
 
     // Basic CRUD operations for Loan entity
-    public Loan createLoan(Loan loan) {
-        return loanRepository.save(loan);
-    }
-
     public Loan getLoanById(Long id) {
         return loanRepository.findById(id).orElse(null);
     }
@@ -46,16 +42,6 @@ public class LoanService {
         return loanRepository.findById(id)
                 .map(loan -> {
                     loan.setStatus(status);
-                    return loanRepository.save(loan);
-                })
-                .orElse(null);
-    }
-
-    public Loan linkWorkflowInstance(Long id, String processInstanceId) {
-        //TODO: Check existance of processInstanceId
-        return loanRepository.findById(id)
-                .map(loan -> {
-                    loan.setWorkflowProcessInstanceId(processInstanceId);
                     return loanRepository.save(loan);
                 })
                 .orElse(null);
@@ -78,6 +64,27 @@ public class LoanService {
 
     private record AccountUserResponse(Long id, Role role) {
     }
+    // Method to start the workflow process for a loan application
+    public String startLoanWorkflow(Long loanId, Long clientId) {
+        try {
+            WorkflowStartRequest requestBody = new WorkflowStartRequest(loanId, clientId);
+
+            WorkflowStartResponse response = restClient.post()
+                    .uri("http://workflow-service/workflow/start")
+                    .header("X-Internal-Secret", internalSecret)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(WorkflowStartResponse.class);
+            if (response == null) {
+                throw new IllegalStateException("Workflow service returned an empty response");
+            }
+            return response.processInstanceId();
+        } catch (RestClientException ex) {
+            throw new RuntimeException("Failed to start loan workflow process", ex);
+        }
+    }
+    public record WorkflowStartResponse(String processInstanceId) {}
+    public record WorkflowStartRequest(Long loanId, Long clientId) {}
 
     // Methods for controller to call
     public ResponseEntity<Map<String, String>> createLoanResponse(LoanRequest loanrequest, Long clientId) {
@@ -93,9 +100,12 @@ public class LoanService {
                     loanrequest.durationMonths(),
                     loanrequest.interestRate());
             loan.setClientId(clientId);
-            createLoan(loan);
+            loanRepository.save(loan);
+            String processInstanceId = startLoanWorkflow(loan.getId(), clientId);
+            loan.setWorkflowProcessInstanceId(processInstanceId);
+            loanRepository.save(loan);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of("status", "SUCCESS", "message", "Loan created"));
+                    .body(Map.of("status", "SUCCESS", "message", "Loan submitted"));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("status", "FAILED", "message", ex.getMessage()));
@@ -133,14 +143,5 @@ public class LoanService {
                     .body(Map.of("status", "FAILED", "message", "Loan not found"));
         }
         return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan status updated"));
-    }
-
-    public ResponseEntity<Map<String, String>> linkWorkflowInstanceResponse(Long id, String processInstanceId) {
-        Loan loan = linkWorkflowInstance(id, processInstanceId);
-        if (loan == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", "FAILED", "message", "Loan not found"));
-        }
-        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Workflow instance linked"));
     }
 }

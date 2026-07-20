@@ -51,11 +51,4 @@ public class LoanController {
         LoanStatus status = LoanStatus.valueOf(payload.get("status"));
         return loanService.updateLoanStatusResponse(id, status);
     }
-
-    @PutMapping("/{id}/workflow")
-    public ResponseEntity<Map<String, String>> linkWorkflowInstance(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> payload) {
-        return loanService.linkWorkflowInstanceResponse(id, payload.get("processInstanceId"));
-    }
 }
