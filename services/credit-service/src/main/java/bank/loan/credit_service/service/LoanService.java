@@ -75,6 +75,7 @@ public class LoanService {
                         loan.setAmount(task.amount());
                         loan.setFinalDecision(task.finalDecision());
                         loan.setDurationMonths(task.durationMonths());
+                        loan.setStartDate(task.startDate());
                         return loanRepository.save(loan);
                     })
                     .orElse(null);

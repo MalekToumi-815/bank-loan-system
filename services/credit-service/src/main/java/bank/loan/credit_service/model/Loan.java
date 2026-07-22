@@ -14,6 +14,9 @@ public class Loan {
     private Long clientId; // reference to account-service's User
 
     private Date submissionDate;
+    private Date startDate;
+
+
 
     private float amount;
 
@@ -116,5 +119,13 @@ public class Loan {
 
     public void setWorkflowProcessInstanceId(String workflowProcessInstanceId) {
         this.workflowProcessInstanceId = workflowProcessInstanceId;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 }

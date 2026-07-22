@@ -1,5 +1,6 @@
 package bank.loan.workflow_service.service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,14 +213,16 @@ public class WorkflowService {
         float amount = getFloatVariable(variables, "amount");
         int durationMonths = getIntVariable(variables, "durationMonths");
         String finalDecision = String.valueOf(variables.get("finalDecision"));
+        Date startDate = (Date) variables.get("startDate");
 
         variables.put("amount", amount);
         variables.put("durationMonths", durationMonths);
+        variables.put("startDate", startDate);
 
         creditClient.put()
                 .uri("/loans/{id}/admin-task", loanId)
                 .header("X-Internal-Secret", internalSecret)
-                .body(new AdminTask(amount, finalDecision, durationMonths))
+                .body(new AdminTask(amount, finalDecision, durationMonths, startDate))
                 .retrieve()
                 .toBodilessEntity();
     }
