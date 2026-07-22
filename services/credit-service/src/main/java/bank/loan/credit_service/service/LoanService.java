@@ -12,6 +12,8 @@ import org.springframework.web.client.RestClientException;
 
 import bank.loan.credit_service.dto.loan.LoanRequest;
 import bank.loan.credit_service.dto.loan.LoanResponse;
+import bank.loan.credit_service.dto.task.AdminTask;
+import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.Loan;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.model.Role;
@@ -56,6 +58,27 @@ public class LoanService {
                 })
                 .orElse(null);
     }
+
+        public Loan updateReceptionistTask(Long id, ReceptionistTask task) {
+            return loanRepository.findById(id)
+                    .map(loan -> {
+                        loan.setInterestRate(task.interestRate());
+                        loan.setStatus(task.status());
+                        return loanRepository.save(loan);
+                    })
+                    .orElse(null);
+        }
+
+        public Loan updateAdminTask(Long id, AdminTask task) {
+            return loanRepository.findById(id)
+                    .map(loan -> {
+                        loan.setAmount(task.amount());
+                        loan.setFinalDecision(task.finalDecision());
+                        loan.setDurationMonths(task.durationMonths());
+                        return loanRepository.save(loan);
+                    })
+                    .orElse(null);
+        }
 
     // Method to check if a user is eligible for a loan based on their role
     public boolean isUserEligibleForLoan(Long userId) {
@@ -151,4 +174,22 @@ public class LoanService {
         }
         return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan process instance ID updated"));
     }
+
+        public ResponseEntity<Map<String, String>> updateReceptionistTaskResponse(Long id, ReceptionistTask task) {
+            Loan loan = updateReceptionistTask(id, task);
+            if (loan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Loan not found"));
+            }
+            return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan receptionist fields updated"));
+        }
+
+        public ResponseEntity<Map<String, String>> updateAdminTaskResponse(Long id, AdminTask task) {
+            Loan loan = updateAdminTask(id, task);
+            if (loan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Loan not found"));
+            }
+            return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan admin fields updated"));
+        }
 }

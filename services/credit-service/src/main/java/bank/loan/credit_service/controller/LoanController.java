@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import bank.loan.credit_service.dto.LoanRequest;
-import bank.loan.credit_service.dto.LoanResponse;
+import bank.loan.credit_service.dto.loan.LoanRequest;
+import bank.loan.credit_service.dto.loan.LoanResponse;
+import bank.loan.credit_service.dto.task.AdminTask;
+import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.service.LoanService;
 
@@ -66,4 +68,20 @@ public class LoanController {
         String processInstanceId = payload.get("processInstanceId");
         return loanService.updateProcessInstanceidResponse(id, processInstanceId);
     }
+
+    @PutMapping("/{id}/receptionist-task")
+    public ResponseEntity<Map<String, String>> updateReceptionistTask(
+            @PathVariable Long id,
+            @RequestBody ReceptionistTask task) {
+        return loanService.updateReceptionistTaskResponse(id, task);
+    }
+
+    @PutMapping("/{id}/admin-task")
+    public ResponseEntity<Map<String, String>> updateAdminTask(
+            @PathVariable Long id,
+            @RequestBody AdminTask task) {
+        return loanService.updateAdminTaskResponse(id, task);
+    }
+
+    //TODO: Add endpoint for recommendation officer task
 }
