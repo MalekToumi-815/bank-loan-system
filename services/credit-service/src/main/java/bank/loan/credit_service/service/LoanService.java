@@ -48,6 +48,15 @@ public class LoanService {
                 .orElse(null);
     }
 
+        public Loan updateProcessInstanceid(Long id, String processInstanceId) {
+        return loanRepository.findById(id)
+                .map(loan -> {
+                    loan.setWorkflowProcessInstanceId(processInstanceId);
+                    return loanRepository.save(loan);
+                })
+                .orElse(null);
+    }
+
     // Method to check if a user is eligible for a loan based on their role
     public boolean isUserEligibleForLoan(Long userId) {
         try {
@@ -65,30 +74,9 @@ public class LoanService {
 
     private record AccountUserResponse(Long id, Role role) {
     }
-    // Method to start the workflow process for a loan application
-    public String startLoanWorkflow(Long loanId, Long clientId) {
-        try {
-            WorkflowStartRequest requestBody = new WorkflowStartRequest(loanId, clientId);
-
-            WorkflowStartResponse response = restClient.post()
-                    .uri("http://workflow-service/workflow/start")
-                    .header("X-Internal-Secret", internalSecret)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(WorkflowStartResponse.class);
-            if (response == null) {
-                throw new IllegalStateException("Workflow service returned an empty response");
-            }
-            return response.processInstanceId();
-        } catch (RestClientException ex) {
-            throw new RuntimeException("Failed to start loan workflow process", ex);
-        }
-    }
-    public record WorkflowStartResponse(String processInstanceId) {}
-    public record WorkflowStartRequest(Long loanId, Long clientId) {}
 
     // Methods for controller to call
-    public ResponseEntity<Map<String, String>> createLoanResponse(LoanRequest loanrequest, Long clientId) {
+    public ResponseEntity<Map<String, Object>> createLoanResponse(LoanRequest loanrequest, Long clientId) {
         try {
             if (!isUserEligibleForLoan(clientId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -97,15 +85,11 @@ public class LoanService {
             Loan loan = new Loan(
                     loanrequest.amount(),
                     loanrequest.type(),
-                    loanrequest.durationMonths(),
-                    loanrequest.interestRate());
+                    loanrequest.durationMonths());
             loan.setClientId(clientId);
             loanRepository.save(loan);
-            String processInstanceId = startLoanWorkflow(loan.getId(), clientId);
-            loan.setWorkflowProcessInstanceId(processInstanceId);
-            loanRepository.save(loan);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of("status", "SUCCESS", "message", "Loan submitted"));
+                    .body(Map.of("status", "SUCCESS", "message", "Loan submitted", "loanId", loan.getId()));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("status", "FAILED", "message", ex.getMessage()));
@@ -125,6 +109,16 @@ public class LoanService {
                 .map(this::toLoanResponse)
                 .toList();
         return ResponseEntity.ok(loans);
+    }
+
+    public ResponseEntity<Map<String, String>> deleteLoanResponse(Long id) {
+        if (!loanRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAILED", "message", "Loan not found"));
+        }
+
+        loanRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan deleted"));
     }
     
     private LoanResponse toLoanResponse(Loan loan) {
@@ -146,5 +140,14 @@ public class LoanService {
                     .body(Map.of("status", "FAILED", "message", "Loan not found"));
         }
         return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan status updated"));
+    }
+
+        public ResponseEntity<Map<String, String>> updateProcessInstanceidResponse(Long id, String processInstanceId) {
+        Loan loan = updateProcessInstanceid(id, processInstanceId);
+        if (loan == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAILED", "message", "Loan not found"));
+        }
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan process instance ID updated"));
     }
 }

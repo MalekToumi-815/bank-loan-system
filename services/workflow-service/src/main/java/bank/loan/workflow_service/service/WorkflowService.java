@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import bank.loan.workflow_service.dto.TaskResponseDto;
+import bank.loan.workflow_service.dto.LoanRequest;
 import bank.loan.workflow_service.dto.StartProcessRequest;
 import bank.loan.workflow_service.model.Role;
 
@@ -23,28 +24,95 @@ import bank.loan.workflow_service.model.Role;
 public class WorkflowService {
     private final RuntimeService runtimeService;
     private final TaskService taskService;
-    private final RestClient restClient;
+    private final RestClient accountClient;
+    private final RestClient creditClient;
     private final String internalSecret;
 
     public WorkflowService(RuntimeService runtimeService, TaskService taskService, RestClient.Builder restClientBuilder, @Value("${internal.shared-secret}") String internalSecret) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
-        this.restClient = restClientBuilder
-                .baseUrl("http://account-service") 
+        this.accountClient = restClientBuilder
+                .baseUrl("http://account-service")
+                .build();
+        this.creditClient = restClientBuilder
+                .baseUrl("http://credit-service")
                 .build();
         this.internalSecret = internalSecret;
     }
 
-    public ResponseEntity<Map<String, String>> startWorkflow(StartProcessRequest request) {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("loanId", request.loanId());
-        variables.put("clientId", request.clientId());
+    public ResponseEntity<Map<String, Object>> startWorkflow(LoanRequest request, Long clientId) {
+        Long loanId = null; 
+        String processInstanceId = null;
 
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("creditWorkflow", variables);
-        
-        Map<String, String> response = new HashMap<>();
-        response.put("processInstanceId", processInstance.getId());
-        return ResponseEntity.ok(response);
+        try {
+            // --- STEP A: Ask credit-service to create the loan ---
+            Map<String, Object> createResponse = creditClient.post()
+                    .uri("/loans")
+                    .header("X-User-Id", clientId.toString())
+                    .header("X-Internal-Secret", internalSecret)
+                    .body(request)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+
+            if (createResponse == null || !createResponse.containsKey("loanId")) {
+                throw new RuntimeException("Failed to create loan in credit-service");
+            }
+
+            loanId = Long.valueOf(createResponse.get("loanId").toString());
+
+            // --- STEP B: Start the Flowable Process Instance ---
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("loanId", loanId);
+            variables.put("clientId", clientId);
+
+            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("creditWorkflow", variables);
+            processInstanceId = processInstance.getId();
+
+            // --- STEP C: Send the processInstanceId back to credit-service ---
+            creditClient.put()
+                    .uri("/loans/{id}/process-instance-id", loanId)
+                    .header("X-Internal-Secret", internalSecret)
+                    .body(Map.of("processInstanceId", processInstanceId))
+                    .retrieve()
+                    .toBodilessEntity();
+
+            // Return final success response
+            Map<String, Object> response = new HashMap<>();
+            response.put("processInstanceId", processInstanceId);
+            response.put("loanId", loanId);
+            response.put("status", "SUCCESS");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception ex) {
+            // --- THE ROLLBACK (Compensating Transaction) ---
+
+            if (loanId != null) {
+                try {
+                    // If the loan was created, but the process failed, DELETE the orphaned loan
+                    creditClient.delete() 
+                            .uri("/loans/{id}", loanId)
+                            .header("X-Internal-Secret", internalSecret)
+                            .retrieve()
+                            .toBodilessEntity();
+                } catch (Exception rollbackEx) {
+                    // If the rollback ALSO fails, log this heavily so developers can fix it manually
+                    System.err.println("CRITICAL ALERT: Failed to rollback orphaned loan ID: " + loanId);
+                }
+            }
+
+            if (processInstanceId != null) {
+                try {
+                    // If Flowable started but Step C failed, delete the orphaned workflow
+                    runtimeService.deleteProcessInstance(processInstanceId, "Failed to update credit-service");
+                } catch (Exception rollbackEx) {
+                    System.err.println("CRITICAL ALERT: Failed to rollback orphaned process ID: " + processInstanceId);
+                }
+            }
+
+            // Re-throw the error so the user knows it failed
+            throw new RuntimeException("Workflow initiation failed. The transaction was rolled back.", ex);
+        }
     }
 
     public ResponseEntity<List<TaskResponseDto>> getTasks(String assignee) {
@@ -55,7 +123,7 @@ public class WorkflowService {
 
         List<TaskResponseDto> response = tasks.stream().map(task -> {
             // Fetch the loanId bound to this specific process execution instance
-            String loanId = (String) runtimeService.getVariable(task.getExecutionId(), "loanId");
+            Long loanId = (Long) runtimeService.getVariable(task.getExecutionId(), "loanId");
 
             // Map directly to your strongly-typed DTO record
             return new TaskResponseDto(
@@ -77,7 +145,7 @@ public class WorkflowService {
 
     //Fetching Active Users with a certain Role
     public List<UserResponse> fetchUsers(Role role) {
-        return restClient.get()
+        return accountClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users")
                         .queryParam("role", role)

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,7 @@ public class LoanController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> createLoan(
+    public ResponseEntity<Map<String, Object>> createLoan(
             @RequestBody LoanRequest loanRequest,
             @RequestHeader("X-User-Id") Long clientId) {
         return loanService.createLoanResponse(loanRequest, clientId);
@@ -45,11 +46,24 @@ public class LoanController {
         return loanService.getAllLoansResponse();
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteLoan(@PathVariable Long id) {
+        return loanService.deleteLoanResponse(id);
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<Map<String, String>> updateLoanStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> payload) {
         LoanStatus status = LoanStatus.valueOf(payload.get("status"));
         return loanService.updateLoanStatusResponse(id, status);
+    }
+
+    @PutMapping("/{id}/process-instance-id")
+    public ResponseEntity<Map<String, String>> updateProcessInstanceid(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+        String processInstanceId = payload.get("processInstanceId");
+        return loanService.updateProcessInstanceidResponse(id, processInstanceId);
     }
 }

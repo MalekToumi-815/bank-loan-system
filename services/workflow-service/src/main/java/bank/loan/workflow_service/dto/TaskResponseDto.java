@@ -5,5 +5,5 @@ public record TaskResponseDto(
     String taskName,
     String taskDefinitionKey,
     String processInstanceId,
-    String loanId
+    Long loanId
 ) {}

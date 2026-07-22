@@ -1,6 +1,5 @@
-package bank.loan.credit_service.dto;
+package bank.loan.workflow_service.dto;
 
-import bank.loan.credit_service.model.LoanType;
 
 public record LoanRequest(
         float amount,
