@@ -4,9 +4,9 @@
     <extensionElements>
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-07-11T18:08:24.336Z]]></design:creationdate>
-      <design:modificationdate><![CDATA[2026-07-18T20:07:31.786Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-07-22T00:45:08.041Z]]></design:modificationdate>
     </extensionElements>
-    <userTask id="FormTask_61" name="Loan officer validates bank receptionist request" flowable:assignee="${loan_officer_id}" flowable:formFieldValidation="false">
+    <userTask id="officer_validation" name="Loan officer validates bank receptionist request" flowable:assignee="${loan_officer_id}" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -19,7 +19,7 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <userTask id="FormTask_5" name="Bank receptionist create loan request" flowable:assignee="${receptionist_id}" flowable:formFieldValidation="false">
+    <userTask id="receptionist_create_loan" name="Bank receptionist create loan request" flowable:assignee="${receptionist_id}" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -44,7 +44,7 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <userTask id="FormTask_26" name="Bank admin validation" flowable:assignee="${bank_admin_id}" flowable:formFieldValidation="false">
+    <userTask id="admin_approval" name="Bank admin validation" flowable:assignee="${bank_admin_id}" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -57,14 +57,14 @@
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </serviceTask>
-    <userTask id="FormTask_46" name="Loan officer writes recommendation" flowable:assignee="${loan_officer_id}" flowable:formFieldValidation="false">
+    <userTask id="officer_recommendation" name="Loan officer writes recommendation" flowable:assignee="${loan_officer_id}" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
       </extensionElements>
     </userTask>
-    <userTask id="FormTask_49" name="Bank admin fills credit and final decision fields" flowable:assignee="${bank_admin_id}" flowable:formFieldValidation="false">
+    <userTask id="admin_decision" name="Bank admin fills credit and final decision fields" flowable:assignee="${bank_admin_id}" flowable:formFieldValidation="false">
       <extensionElements>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
@@ -132,7 +132,7 @@
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
-    <sequenceFlow id="SequenceFlow_64" sourceRef="FormTask_61" targetRef="Exclusive_Databased_Gateway_63">
+    <sequenceFlow id="SequenceFlow_64" sourceRef="officer_validation" targetRef="Exclusive_Databased_Gateway_63">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -142,7 +142,7 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_56" sourceRef="FormTask_5" targetRef="Exclusive_Databased_Gateway_7">
+    <sequenceFlow id="SequenceFlow_56" sourceRef="receptionist_create_loan" targetRef="Exclusive_Databased_Gateway_7">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -162,7 +162,7 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_35" sourceRef="FormTask_26" targetRef="Exclusive_Databased_Gateway_32">
+    <sequenceFlow id="SequenceFlow_35" sourceRef="admin_approval" targetRef="Exclusive_Databased_Gateway_32">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -172,12 +172,12 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_48" sourceRef="FormTask_46" targetRef="ServiceTask_20">
+    <sequenceFlow id="SequenceFlow_48" sourceRef="officer_recommendation" targetRef="ServiceTask_20">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_70" sourceRef="FormTask_49" targetRef="ServiceTask_68">
+    <sequenceFlow id="SequenceFlow_70" sourceRef="admin_decision" targetRef="ServiceTask_68">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -187,17 +187,17 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_55" sourceRef="ServiceTask_51" targetRef="FormTask_5">
+    <sequenceFlow id="SequenceFlow_55" sourceRef="ServiceTask_51" targetRef="receptionist_create_loan">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_62" sourceRef="ServiceTask_58" targetRef="FormTask_61">
+    <sequenceFlow id="SequenceFlow_62" sourceRef="ServiceTask_58" targetRef="officer_validation">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_69" sourceRef="ServiceTask_67" targetRef="FormTask_26">
+    <sequenceFlow id="SequenceFlow_69" sourceRef="ServiceTask_67" targetRef="admin_approval">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -209,14 +209,14 @@
       </extensionElements>
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${execution.getVariable('loan_officer_id') != null}]]></conditionExpression>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_50" name="yes" sourceRef="Exclusive_Databased_Gateway_32" targetRef="FormTask_49">
+    <sequenceFlow id="SequenceFlow_50" name="yes" sourceRef="Exclusive_Databased_Gateway_32" targetRef="admin_decision">
       <extensionElements>
         <flowable:is-default-flow><![CDATA[true]]></flowable:is-default-flow>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="SequenceFlow_65" name="Yes" sourceRef="Exclusive_Databased_Gateway_63" targetRef="FormTask_46">
+    <sequenceFlow id="SequenceFlow_65" name="Yes" sourceRef="Exclusive_Databased_Gateway_63" targetRef="officer_recommendation">
       <extensionElements>
         <flowable:is-default-flow><![CDATA[true]]></flowable:is-default-flow>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
@@ -252,13 +252,13 @@
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_creditWorkflow">
     <bpmndi:BPMNPlane bpmnElement="creditWorkflow" id="BPMNPlane_creditWorkflow">
-      <bpmndi:BPMNShape bpmnElement="FormTask_61" id="BPMNShape_FormTask_61">
+      <bpmndi:BPMNShape bpmnElement="officer_validation" id="BPMNShape_officer_validation">
         <omgdc:Bounds height="100.0" width="100.0" x="1043.2760805293797" y="226.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_68" id="BPMNShape_ServiceTask_68">
         <omgdc:Bounds height="90.0" width="108.0" x="2088.308865518556" y="231.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="FormTask_5" id="BPMNShape_FormTask_5">
+      <bpmndi:BPMNShape bpmnElement="receptionist_create_loan" id="BPMNShape_receptionist_create_loan">
         <omgdc:Bounds height="80.0" width="104.0" x="518.8097504274997" y="236.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_13" id="BPMNShape_ServiceTask_13">
@@ -270,16 +270,16 @@
       <bpmndi:BPMNShape bpmnElement="ServiceTask_22" id="BPMNShape_ServiceTask_22">
         <omgdc:Bounds height="80.0" width="100.0" x="1832.0517160207282" y="70.96237970543172"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="FormTask_26" id="BPMNShape_FormTask_26">
+      <bpmndi:BPMNShape bpmnElement="admin_approval" id="BPMNShape_admin_approval">
         <omgdc:Bounds height="80.0" width="100.0" x="1715.7950322910901" y="236.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_37" id="BPMNShape_ServiceTask_37">
         <omgdc:Bounds height="80.0" width="100.0" x="2236.4066524544082" y="236.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="FormTask_46" id="BPMNShape_FormTask_46">
+      <bpmndi:BPMNShape bpmnElement="officer_recommendation" id="BPMNShape_officer_recommendation">
         <omgdc:Bounds height="80.0" width="100.0" x="1296.0" y="236.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="FormTask_49" id="BPMNShape_FormTask_49">
+      <bpmndi:BPMNShape bpmnElement="admin_decision" id="BPMNShape_admin_decision">
         <omgdc:Bounds height="80.0" width="100.0" x="1950.786586419761" y="236.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="ServiceTask_3" id="BPMNShape_ServiceTask_3">
