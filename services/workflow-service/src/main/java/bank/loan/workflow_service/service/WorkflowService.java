@@ -16,9 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import bank.loan.workflow_service.dto.TaskResponseDto;
+import bank.loan.workflow_service.dto.AdminTask;
 import bank.loan.workflow_service.dto.LoanRequest;
-import bank.loan.workflow_service.dto.StartProcessRequest;
+import bank.loan.workflow_service.dto.ReceptionistTask;
+import bank.loan.workflow_service.model.LoanStatus;
 import bank.loan.workflow_service.model.Role;
+import bank.loan.workflow_service.model.TaskKeys;
 
 @Service
 public class WorkflowService {
@@ -139,8 +142,94 @@ public class WorkflowService {
     }
 
     public ResponseEntity<Void> completeTask(String taskId, Map<String, Object> variables) {
-        taskService.complete(taskId, variables);
+        Task task = taskService.createTaskQuery()
+                .taskId(taskId)
+                .singleResult();
+
+        if (task == null) {
+            throw new IllegalArgumentException("Task not found: " + taskId);
+        }
+
+        Long loanId = (Long) runtimeService.getVariable(task.getExecutionId(), "loanId");
+        Map<String, Object> taskVariables = variables == null
+                ? new HashMap<>()
+                : new HashMap<>(variables);
+
+        switch (TaskKeys.valueOf(task.getTaskDefinitionKey())) {
+            case receptionist_create_loan -> completeReceptionistTask(loanId, taskVariables);
+            case officer_validation -> setBooleanProcessVariable(task, taskVariables, "is_valid");
+            case admin_approval -> completeAdminApprovalTask(loanId, task, taskVariables);
+            case admin_decision -> completeAdminDecisionTask(loanId, task, taskVariables);
+            case officer_recommendation -> {//TODO: Implement officer recommendation task completion logic
+            }
+        }
+
+        runtimeService.setVariables(task.getProcessInstanceId(), taskVariables);
+        taskService.complete(taskId, taskVariables);
         return ResponseEntity.noContent().build();
+    }
+
+    private void completeReceptionistTask(Long loanId, Map<String, Object> variables) {
+        float interestRate = getFloatVariable(variables, "interestRate");
+
+        creditClient.put()
+                .uri("/loans/{id}/receptionist-task", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(new ReceptionistTask(interestRate, LoanStatus.UNDER_REVIEW))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    private void setBooleanProcessVariable(Task task, Map<String, Object> variables, String variableName) {
+        Object value = variables.get(variableName);
+        if (!(value instanceof Boolean)) {
+            value = Boolean.parseBoolean(String.valueOf(value));
+        }
+        variables.put(variableName, value);
+    }
+
+    private void completeAdminApprovalTask(Long loanId, Task task, Map<String, Object> variables) {
+        setBooleanProcessVariable(task, variables, "is_approved");
+        boolean approved = (Boolean) variables.get("is_approved");
+
+        creditClient.put()
+                .uri("/loans/{id}/status", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(Map.of("status", approved ? LoanStatus.APPROVED.name() : LoanStatus.REJECTED.name()))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    private void completeAdminDecisionTask(Long loanId, Task task, Map<String, Object> variables) {
+        float amount = getFloatVariable(variables, "amount");
+        int durationMonths = getIntVariable(variables, "durationMonths");
+        String finalDecision = String.valueOf(variables.get("finalDecision"));
+
+        variables.put("amount", amount);
+        variables.put("durationMonths", durationMonths);
+
+        creditClient.put()
+                .uri("/loans/{id}/admin-task", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(new AdminTask(amount, finalDecision, durationMonths))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    private float getFloatVariable(Map<String, Object> variables, String variableName) {
+        Object value = variables.get(variableName);
+        if (value instanceof Number number) {
+            return number.floatValue();
+        }
+        return Float.parseFloat(String.valueOf(value));
+    }
+
+    private int getIntVariable(Map<String, Object> variables, String variableName) {
+        Object value = variables.get(variableName);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.parseInt(String.valueOf(value));
     }
 
     //Fetching Active Users with a certain Role

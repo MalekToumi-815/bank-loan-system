@@ -1,4 +1,4 @@
-package bank.loan.workflow_service.dto;
+package bank.loan.workflow_service.model;
 
 public enum LoanType {
     PERSONAL_LOAN,
