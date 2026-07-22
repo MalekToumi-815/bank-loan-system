@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.springframework.beans.factory.annotation.Value;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
+import org.flowable.variable.api.history.HistoricVariableInstance;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 
@@ -17,7 +20,9 @@ import org.springframework.web.client.RestClient;
 
 import bank.loan.workflow_service.dto.TaskResponseDto;
 import bank.loan.workflow_service.dto.AdminTask;
+import bank.loan.workflow_service.dto.HistoricProcessInstanceDto;
 import bank.loan.workflow_service.dto.LoanRequest;
+import bank.loan.workflow_service.dto.ProcessInstanceDto;
 import bank.loan.workflow_service.dto.ReceptionistTask;
 import bank.loan.workflow_service.model.LoanStatus;
 import bank.loan.workflow_service.model.Role;
@@ -27,13 +32,15 @@ import bank.loan.workflow_service.model.TaskKeys;
 public class WorkflowService {
     private final RuntimeService runtimeService;
     private final TaskService taskService;
+    private final HistoryService historyService;
     private final RestClient accountClient;
     private final RestClient creditClient;
     private final String internalSecret;
 
-    public WorkflowService(RuntimeService runtimeService, TaskService taskService, RestClient.Builder restClientBuilder, @Value("${internal.shared-secret}") String internalSecret) {
+    public WorkflowService(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RestClient.Builder restClientBuilder, @Value("${internal.shared-secret}") String internalSecret) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
+        this.historyService = historyService;
         this.accountClient = restClientBuilder
                 .baseUrl("http://account-service")
                 .build();
@@ -133,6 +140,7 @@ public class WorkflowService {
                 task.getId(),
                 task.getName(),
                 task.getTaskDefinitionKey(),
+                task.getAssignee(),
                 task.getProcessInstanceId(),
                 loanId
             );
@@ -247,4 +255,80 @@ public class WorkflowService {
 
     // Shared DTO record
     public record UserResponse(Long id, String name, String email) {}
+
+    //Admin monitoring methods
+    public ResponseEntity<List<TaskResponseDto>> getTasksByKey(String taskKey) {
+        var query = taskService.createTaskQuery().active();
+        
+        if (taskKey != null && !taskKey.isBlank()) {
+            query.taskDefinitionKey(taskKey);
+        }
+
+        List<Task> tasks = query.list();
+
+        List<TaskResponseDto> response = tasks.stream().map(task -> {
+            Long loanId = (Long) runtimeService.getVariable(task.getExecutionId(), "loanId");
+            return new TaskResponseDto(
+                task.getId(),
+                task.getName(),
+                task.getTaskDefinitionKey(),
+                task.getAssignee(),
+                task.getProcessInstanceId(),
+                loanId
+            );
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<List<ProcessInstanceDto>> getActiveInstances() {
+        List<ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
+                .active()
+                .list();
+
+        List<ProcessInstanceDto> response = instances.stream().map(inst -> {
+            // You can pull variables tied to the instance if needed
+            Long loanId = (Long) runtimeService.getVariable(inst.getId(), "loanId");
+            return new ProcessInstanceDto(
+                inst.getId(),
+                inst.getProcessDefinitionKey(),
+                inst.getStartTime(),
+                loanId
+            );
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<List<HistoricProcessInstanceDto>> getInactiveInstances() {
+        // Query process instances that have finished (completed or deleted)
+        List<HistoricProcessInstance> historicInstances = historyService.createHistoricProcessInstanceQuery()
+                .finished()
+                .orderByProcessInstanceEndTime().desc()
+                .list();
+
+        List<HistoricProcessInstanceDto> response = historicInstances.stream().map(inst -> {
+            // Retrieve the loanId from historic variables tied to this process
+            Long loanId = null;
+            HistoricVariableInstance var = historyService.createHistoricVariableInstanceQuery()
+                    .processInstanceId(inst.getId())
+                    .variableName("loanId")
+                    .singleResult();
+
+            if (var != null && var.getValue() != null) {
+                loanId = (Long) var.getValue();
+            }
+
+            return new HistoricProcessInstanceDto(
+                inst.getId(),
+                inst.getProcessDefinitionKey(),
+                inst.getStartTime(),
+                inst.getEndTime(),
+                inst.getDeleteReason(),
+                loanId
+            );
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
 }

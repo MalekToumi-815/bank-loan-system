@@ -4,6 +4,7 @@ public record TaskResponseDto(
     String taskId,
     String taskName,
     String taskDefinitionKey,
+    String assignee,
     String processInstanceId,
     Long loanId
 ) {}
