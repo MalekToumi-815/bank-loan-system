@@ -27,6 +27,8 @@ public class Loan {
     @Enumerated(EnumType.STRING)
     private LoanStatus status;
 
+    private String finalDecision;
+
     private String workflowProcessInstanceId; // links to Flowable's running instance 
 
     public Loan(float amount, LoanType type, int durationMonths) {
@@ -98,6 +100,14 @@ public class Loan {
 
     public void setStatus(LoanStatus status) {
         this.status = status;
+    }
+
+    public String getFinalDecision() {
+        return finalDecision;
+    }
+
+    public void setFinalDecision(String finalDecision) {
+        this.finalDecision = finalDecision;
     }
 
     public String getWorkflowProcessInstanceId() {

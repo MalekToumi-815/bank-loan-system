@@ -1,4 +1,4 @@
-package bank.loan.credit_service.dto;
+package bank.loan.credit_service.dto.loan;
 
 import java.util.Date;
 
@@ -13,6 +13,7 @@ public record LoanResponse(
         int durationMonths,
         float interestRate,
         String workflowProcessInstanceId,
-        LoanStatus status
+        LoanStatus status,
+        String finalDecision
 ) {
 }

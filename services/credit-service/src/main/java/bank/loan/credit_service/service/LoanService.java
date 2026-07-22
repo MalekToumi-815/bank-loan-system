@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import bank.loan.credit_service.dto.LoanRequest;
-import bank.loan.credit_service.dto.LoanResponse;
+import bank.loan.credit_service.dto.loan.LoanRequest;
+import bank.loan.credit_service.dto.loan.LoanResponse;
 import bank.loan.credit_service.model.Loan;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.model.Role;
@@ -130,7 +130,8 @@ public class LoanService {
                 loan.getDurationMonths(),
                 loan.getInterestRate(),
                 loan.getWorkflowProcessInstanceId(),
-                loan.getStatus());
+                loan.getStatus(),
+                loan.getFinalDecision());
     }
 
     public ResponseEntity<Map<String, String>> updateLoanStatusResponse(Long id, LoanStatus status) {

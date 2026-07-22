@@ -1,4 +1,4 @@
-package bank.loan.credit_service.dto;
+package bank.loan.credit_service.dto.loan;
 
 import bank.loan.credit_service.model.LoanType;
 
