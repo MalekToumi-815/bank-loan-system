@@ -34,6 +34,9 @@ public class Loan {
 
     private String workflowProcessInstanceId; // links to Flowable's running instance 
 
+    @OneToOne(mappedBy = "loan",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private Ammortisation ammortisation;
+
     public Loan(float amount, LoanType type, int durationMonths) {
         this.submissionDate = new Date();
         this.amount = amount;
@@ -127,5 +130,13 @@ public class Loan {
 
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
+    }
+
+    public Ammortisation getAmmortisation() {
+        return ammortisation;
+    }
+
+    public void setAmmortisation(Ammortisation ammortisation) {
+        this.ammortisation = ammortisation;
     }
 }
