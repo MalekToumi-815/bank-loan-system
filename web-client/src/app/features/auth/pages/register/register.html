@@ -1,0 +1,48 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h2>Create your client account</h2>
+      <p>Only clients can self-register. Employee accounts are provisioned by administrators.</p>
+    </div>
+
+    <form class="register-form">
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label for="firstName">First name</label>
+          <input type="text" id="firstName" name="firstName" />
+        </div>
+        <div class="form-group half-width">
+          <label for="lastName">Last name</label>
+          <input type="text" id="lastName" name="lastName" />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" />
+        </div>
+        <div class="form-group half-width">
+          <label for="nationalId">National ID (CIN)</label>
+          <input type="text" id="nationalId" name="nationalId" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" />
+      </div>
+
+      <button type="submit" class="btn-primary">Create account</button>
+    </form>
+
+    <div class="signin-link">
+      <p>Already have an account? <a routerLink="/auth/login">Sign in</a></p>
+    </div>
+  </div>
+</div>
