@@ -11,3 +11,19 @@ export interface LoginResponse {
   refreshTokenExpiresIn: number;
   userId: number;
 }
+
+export interface RegisterRequest {
+  name: string;
+  surname: string;
+  cin: string;
+  phone: string;
+  email: string;
+  password?: string;
+  role: string;
+  status: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  status: string;
+}

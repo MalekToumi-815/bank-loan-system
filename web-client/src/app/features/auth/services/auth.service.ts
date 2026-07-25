@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +24,10 @@ export class AuthService {
         }
       })
     );
+  }
+
+  register(userData: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.baseUrl}account/users`, userData);
   }
 
   logout() {

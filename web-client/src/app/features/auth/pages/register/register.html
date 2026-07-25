@@ -5,37 +5,37 @@
       <p>Only clients can self-register. Employee accounts are provisioned by administrators.</p>
     </div>
 
-    <form class="register-form">
+    <form class="register-form" (ngSubmit)="onSubmit()">
       <div class="form-row">
         <div class="form-group half-width">
           <label for="firstName">First name</label>
-          <input type="text" id="firstName" name="firstName" />
+          <input type="text" id="firstName" name="firstName" [(ngModel)]="userData.name" />
         </div>
         <div class="form-group half-width">
           <label for="lastName">Last name</label>
-          <input type="text" id="lastName" name="lastName" />
+          <input type="text" id="lastName" name="lastName" [(ngModel)]="userData.surname" />
         </div>
       </div>
       
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" />
+        <input type="email" id="email" name="email" [(ngModel)]="userData.email" />
       </div>
 
       <div class="form-row">
         <div class="form-group half-width">
           <label for="phone">Phone</label>
-          <input type="tel" id="phone" name="phone" />
+          <input type="tel" id="phone" name="phone" [(ngModel)]="userData.phone" />
         </div>
         <div class="form-group half-width">
           <label for="nationalId">National ID (CIN)</label>
-          <input type="text" id="nationalId" name="nationalId" />
+          <input type="text" id="nationalId" name="nationalId" [(ngModel)]="userData.cin" />
         </div>
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" />
+        <input type="password" id="password" name="password" [(ngModel)]="userData.password" />
       </div>
 
       <button type="submit" class="btn-primary">Create account</button>
