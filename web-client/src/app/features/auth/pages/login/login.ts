@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -12,6 +13,9 @@ import { FormsModule } from '@angular/forms';
 export class Login {
   email = '';
   password = '';
+  
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   fillDemoAccount(role: string) {
     this.email = `${role}@app.com`;
@@ -19,7 +23,14 @@ export class Login {
   }
 
   onSubmit() {
-    console.log('Login attempt with:', this.email, this.password);
-    // TODO: implement real login
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: (response) => {
+        console.log('Login successful!', response);
+        // this.router.navigate(['/client/dashboard']); // Example routing after login
+      },
+      error: (err) => {
+        console.error('Login failed', err);
+      }
+    });
   }
 }
