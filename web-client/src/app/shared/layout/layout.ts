@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Header } from './header/header';
 import { Sidebar } from './sidebar/sidebar';
 import { UserRole } from '../../core/models/user-role.enum';
+import { AuthService } from '../../features/auth/services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -13,10 +14,21 @@ import { UserRole } from '../../core/models/user-role.enum';
   styleUrls: ['./layout.css']
 })
 export class Layout {
+  private authService = inject(AuthService);
+  public currentUser$ = this.authService.currentUser$;
+  public UserRole = UserRole;
   sidebarCollapsed = signal(false);
-  userRole = UserRole.CLIENT;
 
   toggleSidebar() {
     this.sidebarCollapsed.update(collapsed => !collapsed);
+  }
+
+  mapUserRole(role?: string): UserRole {
+    if (!role) {
+      return UserRole.CLIENT;
+    }
+
+    const normalized = role.toUpperCase() as keyof typeof UserRole;
+    return UserRole[normalized] ?? UserRole.CLIENT;
   }
 }
