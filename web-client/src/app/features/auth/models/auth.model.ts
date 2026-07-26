@@ -12,6 +12,17 @@ export interface LoginResponse {
   userId: number;
 }
 
+export interface UserResponse {
+  id: number;
+  name: string;
+  surname: string;
+  cin: string;
+  phone: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
 export interface RegisterRequest {
   name: string;
   surname: string;

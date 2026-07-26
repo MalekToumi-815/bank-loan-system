@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, mapTo, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models/auth.model';
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,18 +11,28 @@ export class AuthService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiUrl;
 
-  private currentUserSubject = new BehaviorSubject<LoginResponse | null>(null);
+  private loginResponse: LoginResponse | null = null;
+  private currentUserSubject = new BehaviorSubject<UserResponse | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}oauth/login`, credentials).pipe(
       tap(response => {
+        this.loginResponse = response;
         if (response.accessToken) {
           localStorage.setItem('access_token', response.accessToken);
           localStorage.setItem('refresh_token', response.refreshToken);
-          this.currentUserSubject.next(response);
         }
-      })
+      }),
+      switchMap(response =>
+        this.http.get<UserResponse>(`${this.baseUrl}account/users/${response.userId}`).pipe(
+          tap(user => {
+            this.currentUserSubject.next(user);
+            console.log('Current user loaded:', user);
+          }),
+          mapTo(response)
+        )
+      )
     );
   }
 
@@ -33,6 +43,7 @@ export class AuthService {
   logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    this.loginResponse = null;
     this.currentUserSubject.next(null);
   }
 }
