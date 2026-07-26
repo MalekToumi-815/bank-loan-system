@@ -1,0 +1,25 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="logo-block">
+    <span class="logo-icon" aria-hidden="true">🏦</span>
+    <div class="logo-details">
+      <span class="logo-title">Meridian Bank</span>
+      <span class="logo-subtitle">Credit Workflow</span>
+    </div>
+  </div>
+
+  <div class="menu-shell">
+    <ng-container *ngFor="let group of menuGroups">
+      <div class="menu-group">
+        <span class="group-title">{{ group.title }}</span>
+        <ul class="menu-list">
+          <li *ngFor="let item of group.items">
+            <a class="menu-item" [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+              <span class="menu-icon">{{ item.icon }}</span>
+              <span class="label">{{ item.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </ng-container>
+  </div>
+</aside>

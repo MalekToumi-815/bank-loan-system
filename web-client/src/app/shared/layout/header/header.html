@@ -1,0 +1,24 @@
+<header class="app-header">
+  <button class="toggle-button" type="button" (click)="onToggle()" aria-label="Toggle sidebar">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <div class="header-spacer"></div>
+
+  <div class="header-actions">
+    <button class="notification-button" type="button" aria-label="Notifications">
+      <span class="bell">🔔</span>
+      <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+    </button>
+
+    <div class="user-pill">
+      <div class="avatar">{{ userName[0] }}</div>
+      <div class="user-details">
+        <span class="user-name">{{ userName }}</span>
+        <span class="user-role">{{ userRole }}</span>
+      </div>
+    </div>
+  </div>
+</header>

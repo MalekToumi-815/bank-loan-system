@@ -1,0 +1,26 @@
+.layout-shell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg-main);
+}
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  transition: margin-left 0.25s ease, width 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content.expanded {
+  margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+.content-area {
+  flex: 1;
+  padding: 1.5rem;
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg-main);
+}

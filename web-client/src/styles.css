@@ -14,6 +14,15 @@
   --input-border: #d1d5db;
   --input-focus: #0f766e;
   
+  /* Layout Variables */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 0px;
+  --header-height: 60px;
+  --sidebar-bg: var(--brand-primary);
+  --sidebar-text: #94a3b8;
+  --sidebar-text-active: #ffffff;
+  --sidebar-item-active-bg: rgba(15, 118, 110, 0.3);
+  
   /* Status Colors */
   --error: #ef4444;
   --success: #10b981;

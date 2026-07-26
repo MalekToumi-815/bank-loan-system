@@ -1,0 +1,10 @@
+<div class="layout-shell">
+  <app-sidebar [collapsed]="sidebarCollapsed()" [userRole]="userRole"></app-sidebar>
+
+  <div class="main-content" [class.expanded]="sidebarCollapsed()">
+    <app-header (toggleSidebar)="toggleSidebar()"></app-header>
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
