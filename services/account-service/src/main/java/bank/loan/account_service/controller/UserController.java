@@ -34,7 +34,7 @@ public class UserController {
 		return userService.createUserResponse(user);
 	}
 
-	@PreAuthorize("hasAuthority('MANAGE-USERS')")
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || hasRole('INTERNAL')")
 	@GetMapping
 	public java.util.List<UserResponse> getAllUsers(
 			@RequestParam(required = false) Role role,
@@ -42,13 +42,13 @@ public class UserController {
 		return userService.getAllUsers(role, status);
 	}
 
-	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id")
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id || hasRole('INTERNAL')")
 	@GetMapping("/{id}")
 	public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
 		return userService.getUserByIdResponse(id);
 	}
 
-	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id")
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id || hasRole('INTERNAL')")
 	@PutMapping("/{id}")
 	public ResponseEntity<java.util.Map<String, String>> updateUser(
 			@PathVariable Long id,
@@ -58,12 +58,13 @@ public class UserController {
 		return userService.updateUserResponse(id, userId, updatedUser);
 	}
 
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id || hasRole('INTERNAL')")
 	@PostMapping("/authenticate")
 	public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest) {
 		return userService.authenticateResponse(authRequest.email());
 	}
 
-	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id")
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id || hasRole('INTERNAL')")
 	@PostMapping("/{id}/change-password")
 	public ResponseEntity<java.util.Map<String, String>> changePassword(@PathVariable Long id,
 		@RequestHeader("X-User-Id") Long userId,	
