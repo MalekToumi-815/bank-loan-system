@@ -33,7 +33,6 @@ export class Login {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (response) => {
         console.log('Login successful!', response);
-        this.router.navigate(['/client/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
