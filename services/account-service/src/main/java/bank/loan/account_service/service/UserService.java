@@ -190,6 +190,8 @@ public List<UserResponse> getAllUsers(Role role, Status status) {
 				user.getPhone(),
 				user.getEmail(),
 				user.getRole(),
-				user.getStatus());
+				user.getStatus(),
+				user.getRole().getPermissions()
+		);
 	}
 }
