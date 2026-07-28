@@ -40,10 +40,36 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${this.baseUrl}account/users`, userData);
   }
 
+  refreshToken(): Observable<LoginResponse> {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    return this.http.post<LoginResponse>(`${this.baseUrl}oauth/refresh`, { token : refreshToken }).pipe(
+      tap(response => {
+        this.loginResponse = response;
+        if (response.accessToken) {
+          localStorage.setItem('access_token', response.accessToken);
+          localStorage.setItem('refresh_token', response.refreshToken);
+        }
+      })
+    );
+  }
+
   logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     this.loginResponse = null;
     this.currentUserSubject.next(null);
+  }
+  //test refresh token
+  fetchuser(userId: number): Observable<UserResponse> {
+    return this.http.get<UserResponse>(`${this.baseUrl}account/users/${userId}`).pipe(
+      tap(user => {
+        this.currentUserSubject.next(user);
+        console.log('Current user loaded:', user);
+      })
+    );
   }
 }
