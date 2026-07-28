@@ -90,7 +90,7 @@ public class LoanService {
                     .retrieve()
                     .body(AccountUserResponse.class);
 
-            return user != null && Role.CLIENT == user.role();
+            return user != null;
         } catch (RestClientException ex) {
             return false;
         }
@@ -104,7 +104,7 @@ public class LoanService {
         try {
             if (!isUserEligibleForLoan(clientId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("status", "FAILED", "message", "User is not eligible for a loan"));
+                        .body(Map.of("status", "FAILED", "message", "User does not exist"));
             }
             Loan loan = new Loan(
                     loanrequest.amount(),

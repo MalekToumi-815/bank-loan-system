@@ -58,8 +58,10 @@ public class WorkflowService {
         try {
             // --- STEP A: Ask credit-service to create the loan ---
             Map<String, Object> createResponse = creditClient.post()
-                    .uri("/loans")
-                    .header("X-User-Id", clientId.toString())
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/loans")
+                            .queryParam("clientId", clientId.toString())
+                            .build())
                     .header("X-Internal-Secret", internalSecret)
                     .body(request)
                     .retrieve()

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,31 +30,37 @@ public class WorkflowController {
         this.workflowService = workflowService;
     }
 
+    @PreAuthorize("hasAuthority('CREATE-LOAN')")
     @PostMapping("/start")
     public ResponseEntity<Map<String, Object>> startWorkflow(@RequestBody LoanRequest request,@RequestHeader("X-User-Id") Long clientId) {
         return workflowService.startWorkflow(request, clientId);
     }
 
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW') || (hasAuthority('VIEW-TASK') && #assignee != null && authentication.principal != null && T(java.lang.String).valueOf(authentication.principal).equals(#assignee))")
     @GetMapping("/tasks")
     public ResponseEntity<List<TaskResponseDto>> getTasks(@RequestParam String assignee) {
         return workflowService.getTasks(assignee);
     }
 
+    @PreAuthorize("hasAuthority('COMPLETE-TASK')")
     @PostMapping("/tasks/{taskId}/complete")
     public ResponseEntity<Void> completeTask(@PathVariable String taskId, @RequestBody Map<String, Object> variables) {
         return workflowService.completeTask(taskId, variables);
     }
 
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
     @GetMapping("/admin/instances/history")
     public ResponseEntity<List<HistoricProcessInstanceDto>> getInstancesHistory() {
         return workflowService.getInactiveInstances();
     }
 
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
     @GetMapping("/admin/instances/active")
     public ResponseEntity<List<ProcessInstanceDto>> getActiveInstances() {
         return workflowService.getActiveInstances();
     }
 
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
     @GetMapping("/admin/tasks")
     public ResponseEntity<List<TaskResponseDto>> getTasksByKey(@RequestParam(required = false) String taskKey) {
         return workflowService.getTasksByKey(taskKey);
