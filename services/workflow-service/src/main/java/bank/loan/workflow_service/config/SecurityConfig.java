@@ -5,13 +5,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <--- Import this
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 
 @Configuration
 @EnableWebSecurity
@@ -33,14 +36,20 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .anyRequest().authenticated()
             )
-            // Order: Internal check runs first, then Gateway Header extraction
+            // 1. Guard Filter runs first to verify secret
             .addFilterBefore(internalHeaderFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(gatewayHeaderAuthenticationFilter, InternalHeaderFilter.class) 
+            // 2. User Filter runs second (after internal secret is verified)
+            .addFilterAfter(gatewayHeaderAuthenticationFilter, internalHeaderFilter.getClass()) 
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authEx) -> {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }));
             
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
