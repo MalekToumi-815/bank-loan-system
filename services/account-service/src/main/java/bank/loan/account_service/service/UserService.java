@@ -105,14 +105,6 @@ public List<UserResponse> getAllUsers(Role role, Status status) {
 	        User updatedUser) {
 			
 	    try {
-	        if (!id.equals(userId)) {
-	            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-	                    .body(Map.of(
-	                            "status", "FAILED",
-	                            "message", "You cannot update another user's account"
-	                    ));
-	        }
-		
 	        return updateUser(id, updatedUser)
 	                .map(user -> ResponseEntity.ok(
 	                        Map.of(

@@ -1,6 +1,7 @@
 package bank.loan.account_service.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,7 @@ public class UserController {
 		return userService.createUserResponse(user);
 	}
 
+	@PreAuthorize("hasAuthority('MANAGE-USERS')")
 	@GetMapping
 	public java.util.List<UserResponse> getAllUsers(
 			@RequestParam(required = false) Role role,
@@ -40,11 +42,13 @@ public class UserController {
 		return userService.getAllUsers(role, status);
 	}
 
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id")
 	@GetMapping("/{id}")
 	public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
 		return userService.getUserByIdResponse(id);
 	}
 
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id")
 	@PutMapping("/{id}")
 	public ResponseEntity<java.util.Map<String, String>> updateUser(
 			@PathVariable Long id,
@@ -59,6 +63,7 @@ public class UserController {
 		return userService.authenticateResponse(authRequest.email());
 	}
 
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id")
 	@PostMapping("/{id}/change-password")
 	public ResponseEntity<java.util.Map<String, String>> changePassword(@PathVariable Long id,
 		@RequestHeader("X-User-Id") Long userId,	
