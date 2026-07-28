@@ -1,5 +1,7 @@
 package bank.loan.oauth_service.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,10 +32,10 @@ public class AuthService {
         this.internalSecret = internalSecret;
     }
 
-    public TokenResponse issueTokens(Long userId) {
+    public TokenResponse issueTokens(Long userId, String role, List<String> permissions) {
         return new TokenResponse(
-                jwtService.generateAccessToken(userId),
-                jwtService.generateRefreshToken(userId),
+                jwtService.generateAccessToken(userId, role, permissions),
+                jwtService.generateRefreshToken(userId, role, permissions),
                 "Bearer",
                 jwtService.getAccessTokenExpiresInSeconds(),
                 jwtService.getRefreshTokenExpiresInSeconds(),
@@ -41,7 +43,7 @@ public class AuthService {
         );
     }
 
-    public Long authenticate(String email, String password) {
+    public AccountAuthResponse authenticate(String email, String password) {
         AccountAuthRequest request = new AccountAuthRequest(email);
         AccountAuthResponse response = restClient.post()
                 .uri("http://" + accountServiceName + "/users/authenticate")
@@ -60,7 +62,7 @@ public class AuthService {
             throw new IllegalArgumentException("Wrong password");
         }
 
-        return response.userId();
+        return response;
     }
 
     public Long extractUserIdFromToken(String token) {
@@ -76,8 +78,8 @@ public class AuthService {
     }
     public ResponseEntity<TokenResponse> loginResponse(String email, String password) {
         try {
-            Long userId = authenticate(email, password);
-            return ResponseEntity.ok(issueTokens(userId));
+            AccountAuthResponse user = authenticate(email, password);
+            return ResponseEntity.ok(issueTokens(user.userId(), user.role(), user.permissions()));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (HttpClientErrorException.Unauthorized ex) {
@@ -91,7 +93,9 @@ public class AuthService {
         }
 
         Long userId = extractUserIdFromToken(token);
-        return ResponseEntity.ok(new ValidationResponse("SUCCESS", "Token is valid", userId));
+        String role = jwtService.extractRole(token);
+        List<String> permissions = jwtService.extractPermissions(token);
+        return ResponseEntity.ok(new ValidationResponse("SUCCESS", "Token is valid", userId, role, permissions));
     }
 
     public ResponseEntity<TokenResponse> refreshResponse(String token) {
@@ -100,7 +104,9 @@ public class AuthService {
         }
 
         Long userId = extractUserIdFromToken(token);
-        return ResponseEntity.ok(issueTokens(userId));
+        String role = jwtService.extractRole(token);
+        List<String> permissions = jwtService.extractPermissions(token);
+        return ResponseEntity.ok(issueTokens(userId, role, permissions));
     }
 
     public record TokenResponse(
@@ -115,6 +121,6 @@ public class AuthService {
     private record AccountAuthRequest(String email) {
     }
 
-    private record AccountAuthResponse(String status, String message, Long userId, String password) {
+    private record AccountAuthResponse(String status, String message, Long userId, String password, String role, java.util.List<String> permissions) {
     }
 }

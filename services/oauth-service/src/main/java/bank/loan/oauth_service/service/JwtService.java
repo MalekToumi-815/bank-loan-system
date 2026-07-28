@@ -2,6 +2,7 @@ package bank.loan.oauth_service.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -28,12 +29,12 @@ public class JwtService {
         this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
-    public String generateAccessToken(Long userId) {
-        return generateToken(userId, accessTokenExpiration, "ACCESS");
+    public String generateAccessToken(Long userId, String role, List<String> permissions) {
+        return generateToken(userId, role, permissions, accessTokenExpiration, "ACCESS");
     }
 
-    public String generateRefreshToken(Long userId) {
-        return generateToken(userId, refreshTokenExpiration, "REFRESH");
+    public String generateRefreshToken(Long userId, String role, List<String> permissions) {
+        return generateToken(userId, role, permissions, refreshTokenExpiration, "REFRESH");
     }
 
     public long getAccessTokenExpiresInSeconds() {
@@ -48,6 +49,14 @@ public class JwtService {
         return Long.valueOf(getClaims(token).get("userId", Long.class));
     }
 
+    public String extractRole(String token) {
+        return getClaims(token).get("role", String.class);
+    }
+
+    public List<String> extractPermissions(String token) {
+        return getClaims(token).get("permissions", List.class);
+    }
+
     public boolean isTokenValid(String token) {
         try {
             Claims claims = getClaims(token);
@@ -57,13 +66,16 @@ public class JwtService {
         }
     }
 
-    private String generateToken(Long userId, long expirationMillis, String type) {
+    private String generateToken(Long userId, String role, List<String> permissions, long expirationMillis, String type) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
-    
+        List<String> safePermissions = permissions == null ? List.of() : permissions;
+
         return Jwts.builder()
                 .subject("user")
                 .claim("userId", userId)
+                .claim("role", role)
+                .claim("permissions", safePermissions)
                 .claim("type", type)
                 .issuedAt(now)
                 .expiration(expiryDate)

@@ -137,7 +137,7 @@ public List<UserResponse> getAllUsers(Role role, Status status) {
 
 	public ResponseEntity<AuthResponse> authenticateResponse(String email) {
 		return userRepository.findByEmail(email)
-				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "User found", user.getId(), user.getPassword())))
+				.map(user -> ResponseEntity.ok(new AuthResponse("SUCCESS", "User found", user.getId(), user.getPassword(), user.getRole(), user.getRole().getPermissions())))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
 	}
 
