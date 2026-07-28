@@ -81,7 +81,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                             return unauthorized(exchange);
                         }
 
-                        log.info("Authenticated user id: {}", response.userId());
+                        log.info("Authenticated user : {}", response.userId(), response.role(), response.permissions());
 
                         ServerHttpRequest request = exchange.getRequest()
                                 .mutate()
@@ -91,10 +91,20 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                             "X-User-Id",
                                             response.userId().toString()
                                     );
+                                    headers.remove("X-Role");
+                                    headers.add(
+                                            "X-Role",
+                                            response.role()
+                                    );
+                                    headers.remove("X-Permissions");
+                                    headers.add(
+                                            "X-Permissions",
+                                            String.join(",", response.permissions())
+                                    );
                                 })
                                 .build();
 
-                        log.debug("Injected X-User-Id header");
+                        log.debug("Injected User header");
 
                         return chain.filter(
                                 exchange.mutate()
