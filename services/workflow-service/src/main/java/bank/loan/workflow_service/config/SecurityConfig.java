@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // <--- Import this
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,24 +15,32 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity 
 public class SecurityConfig {
 
     @Value("${internal.shared-secret}")
     private String expectedSecret;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           GatewayHeaderAuthenticationFilter gatewayHeaderAuthenticationFilter) throws Exception {
+        
+        InternalHeaderFilter internalHeaderFilter = new InternalHeaderFilter(expectedSecret);
+
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(new InternalHeaderFilter(expectedSecret), UsernamePasswordAuthenticationFilter.class)
+            // Order: Internal check runs first, then Gateway Header extraction
+            .addFilterBefore(internalHeaderFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(gatewayHeaderAuthenticationFilter, InternalHeaderFilter.class) 
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authEx) -> {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }));
+            
         return http.build();
     }
 }
