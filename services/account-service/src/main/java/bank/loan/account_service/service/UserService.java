@@ -165,6 +165,26 @@ public List<UserResponse> getAllUsers(Role role, Status status) {
 		return ResponseEntity.ok(java.util.Map.of("status", "SUCCESS", "message", "Password changed successfully"));
 	}
 
+	public boolean resetPassword(Long userId, String encryptedPassword) {
+		Optional<User> optionalUser = userRepository.findById(userId);
+		if (optionalUser.isEmpty()) {
+			return false;
+		}
+
+		User user = optionalUser.get();
+		user.setPassword(encryptedPassword);
+		userRepository.save(user);
+		return true;
+	}
+
+	public ResponseEntity<Map<String, String>> resetPasswordResponse(Long id, String encryptedPassword) {
+		if (!resetPassword(id, encryptedPassword)) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(Map.of("status", "FAILED", "message", "User not found"));
+		}
+		return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Password reset successfully"));
+	}
+
 	public ResponseEntity<Map<String, String>> deleteUserResponse(Long id) {
 		if (!userRepository.existsById(id)) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)

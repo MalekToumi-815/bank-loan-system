@@ -79,7 +79,18 @@ public class UserController {
 		return userService.deleteUserResponse(id);
 	}
 
+	@PreAuthorize("hasRole('INTERNAL')")
+	@PutMapping("/{id}/reset-password")
+	public ResponseEntity<java.util.Map<String, String>> resetPassword(
+			@PathVariable Long id,
+			@RequestBody ResetPasswordRequest request) {
+		return userService.resetPasswordResponse(id, request.encryptedPassword());
+	}
+
 	private record AuthRequest(String email) {
+	}
+
+	private record ResetPasswordRequest(String encryptedPassword) {
 	}
 
 	private record ChangePasswordRequest(String oldPassword, String newPassword) {
