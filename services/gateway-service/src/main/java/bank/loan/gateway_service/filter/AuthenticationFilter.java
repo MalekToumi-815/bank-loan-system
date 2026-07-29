@@ -1,5 +1,7 @@
 package bank.loan.gateway_service.filter;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +28,12 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     private final WebClient webClient;
 
+    private static final List<String> PUBLIC_POST_ENDPOINTS = List.of(
+        "/users",
+        "/password/forgot-password",
+        "/password/reset-password"
+    );
+
     public AuthenticationFilter(WebClient.Builder builder) {
         super(Config.class);
 
@@ -48,8 +56,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             log.info("Incoming request: {} {}", method, path);
 
             // Allow registration without JWT
-            if (method.equals("POST") && path.equals("/users")) {
-                log.info("Skipping authentication for user registration");
+            if (method.equals("POST") && PUBLIC_POST_ENDPOINTS.contains(path)) {
+                log.info("Skipping authentication for public endpoint: {}", path);
                 return chain.filter(exchange);
             }
 
