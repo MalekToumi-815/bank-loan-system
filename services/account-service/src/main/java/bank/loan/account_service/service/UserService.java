@@ -165,6 +165,16 @@ public List<UserResponse> getAllUsers(Role role, Status status) {
 		return ResponseEntity.ok(java.util.Map.of("status", "SUCCESS", "message", "Password changed successfully"));
 	}
 
+	public ResponseEntity<Map<String, String>> deleteUserResponse(Long id) {
+		if (!userRepository.existsById(id)) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(Map.of("status", "FAILED", "message", "User not found"));
+		}
+
+		userRepository.deleteById(id);
+		return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "User deleted"));
+	}
+
 	private void validateEmailAvailability(String email, Long currentUserId) {
 		userRepository.findByEmail(email).ifPresent(existing -> {
 			if (currentUserId == null || !existing.getId().equals(currentUserId)) {

@@ -2,6 +2,7 @@ package bank.loan.account_service.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,6 +71,12 @@ public class UserController {
 		@RequestHeader("X-User-Id") Long userId,	
 		@RequestBody ChangePasswordRequest request) {
 		return userService.changePasswordResponse(id, userId, request.oldPassword(), request.newPassword());
+	}
+
+	@PreAuthorize("hasAuthority('MANAGE-USERS')")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<java.util.Map<String, String>> deleteUser(@PathVariable Long id) {
+		return userService.deleteUserResponse(id);
 	}
 
 	private record AuthRequest(String email) {
