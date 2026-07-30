@@ -84,13 +84,13 @@ public class UserController {
 	public ResponseEntity<java.util.Map<String, String>> resetPassword(
 			@PathVariable Long id,
 			@RequestBody ResetPasswordRequest request) {
-		return userService.resetPasswordResponse(id, request.encryptedPassword());
+		return userService.resetPasswordResponse(id, request.newPassword());
 	}
 
 	private record AuthRequest(String email) {
 	}
 
-	private record ResetPasswordRequest(String encryptedPassword) {
+	private record ResetPasswordRequest(String newPassword) {
 	}
 
 	private record ChangePasswordRequest(String oldPassword, String newPassword) {
