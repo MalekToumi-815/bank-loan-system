@@ -2,7 +2,17 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, switchMap, mapTo, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UserResponse } from '../models/auth.model';
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  UserResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse
+} from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +49,16 @@ export class AuthService {
   register(userData: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.baseUrl}account/users`, userData);
   }
+
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    const payload: ForgotPasswordRequest = { email };
+    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}oauth/forgot-password`, payload);
+  }
+
+  resetPassword(payload: ResetPasswordRequest): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(`${this.baseUrl}oauth/reset-password`, payload);
+  }
+
 
   refreshToken(): Observable<LoginResponse> {
     const refreshToken = localStorage.getItem('refresh_token');
