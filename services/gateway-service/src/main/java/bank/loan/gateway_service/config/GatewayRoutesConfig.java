@@ -24,36 +24,36 @@ public class GatewayRoutesConfig {
     public RouteLocator customRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
 
-            .route("account-service", r -> r
-                .path("/account/**")
-                .filters(f -> f
-                    .stripPrefix(1)
-                    .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
-                    .addRequestHeader("X-Internal-Secret", internalSecret))
-                .uri("lb://account-service"))
+                .route("account-service", r -> r
+                        .path("/account/**")
+                        .filters(f -> f
+                                .stripPrefix(1)
+                                .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
+                                .addRequestHeader("X-Internal-Secret", internalSecret))
+                        .uri("lb://account-service"))
 
-            .route("credit-service", r -> r
-                .path("/credit/**")
-                .filters(f -> f
-                    .stripPrefix(1)
-                    .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
-                    .addRequestHeader("X-Internal-Secret", internalSecret))
-                .uri("lb://credit-service"))
+                .route("credit-service", r -> r
+                        .path("/credit/**")
+                        .filters(f -> f
+                                .stripPrefix(1)
+                                .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
+                                .addRequestHeader("X-Internal-Secret", internalSecret))
+                        .uri("lb://credit-service"))
 
-            .route("oauth-public", r -> r
-                .path("/oauth/login", "/oauth/refresh","/oauth/forgot-password", "/oauth/reset-password")
-                .filters(f -> f
-                    .stripPrefix(1)
-                    .addRequestHeader("X-Internal-Secret", internalSecret))
-                .uri("lb://oauth-service"))
+                .route("oauth-public", r -> r
+                        .path("/oauth/login", "/oauth/refresh")
+                        .filters(f -> f
+                                .stripPrefix(1)
+                                .addRequestHeader("X-Internal-Secret", internalSecret))
+                        .uri("lb://oauth-service"))
 
-            .route("workflow-service", r -> r
-                .path("/workflow/**")
-                .filters(f -> f
-                    .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
-                    .addRequestHeader("X-Internal-Secret", internalSecret))
-                .uri("lb://workflow-service"))
+                .route("workflow-service", r -> r
+                        .path("/workflow/**")
+                        .filters(f -> f
+                                .filter(authenticationFilter.apply(new AuthenticationFilter.Config()))
+                                .addRequestHeader("X-Internal-Secret", internalSecret))
+                        .uri("lb://workflow-service"))
 
-            .build();
+                .build();
     }
 }

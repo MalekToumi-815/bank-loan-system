@@ -23,16 +23,15 @@ import reactor.core.publisher.Mono;
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
     @Value("${internal.shared-secret}")
     private String internalSecret;
-    
+
     private static final Logger log = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     private final WebClient webClient;
 
     private static final List<String> PUBLIC_POST_ENDPOINTS = List.of(
-        "/users",
-        "/password/forgot-password",
-        "/password/reset-password"
-    );
+            "/users",
+            "/forgot-password",
+            "/reset-password");
 
     public AuthenticationFilter(WebClient.Builder builder) {
         super(Config.class);
@@ -97,18 +96,15 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                     headers.remove("X-User-Id");
                                     headers.add(
                                             "X-User-Id",
-                                            response.userId().toString()
-                                    );
+                                            response.userId().toString());
                                     headers.remove("X-Role");
                                     headers.add(
                                             "X-Role",
-                                            response.role()
-                                    );
+                                            response.role());
                                     headers.remove("X-Permissions");
                                     headers.add(
                                             "X-Permissions",
-                                            String.join(",", response.permissions())
-                                    );
+                                            String.join(",", response.permissions()));
                                 })
                                 .build();
 
@@ -117,8 +113,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         return chain.filter(
                                 exchange.mutate()
                                         .request(request)
-                                        .build()
-                        );
+                                        .build());
                     })
                     .onErrorResume(exception -> {
                         log.error("Failed to validate token with oauth-service", exception);
@@ -137,5 +132,6 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         return exchange.getResponse().setComplete();
     }
 
-    public static class Config {}
+    public static class Config {
+    }
 }

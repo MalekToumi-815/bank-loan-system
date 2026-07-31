@@ -1,6 +1,6 @@
-package bank.loan.oauth_service.repository;
+package bank.loan.account_service.repository;
 
-import bank.loan.oauth_service.model.PasswordResetToken;
+import bank.loan.account_service.model.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;

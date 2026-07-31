@@ -1,4 +1,4 @@
-package bank.loan.oauth_service.service;
+package bank.loan.account_service.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

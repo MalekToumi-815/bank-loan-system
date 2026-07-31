@@ -52,11 +52,11 @@ export class AuthService {
 
   forgotPassword(email: string): Observable<ForgotPasswordResponse> {
     const payload: ForgotPasswordRequest = { email };
-    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}oauth/forgot-password`, payload);
+    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}account/forgot-password`, payload);
   }
 
   resetPassword(payload: ResetPasswordRequest): Observable<ResetPasswordResponse> {
-    return this.http.post<ResetPasswordResponse>(`${this.baseUrl}oauth/reset-password`, payload);
+    return this.http.post<ResetPasswordResponse>(`${this.baseUrl}account/reset-password`, payload);
   }
 
 
@@ -66,7 +66,7 @@ export class AuthService {
       throw new Error('No refresh token available');
     }
 
-    return this.http.post<LoginResponse>(`${this.baseUrl}oauth/refresh`, { token : refreshToken }).pipe(
+    return this.http.post<LoginResponse>(`${this.baseUrl}oauth/refresh`, { token: refreshToken }).pipe(
       tap(response => {
         this.loginResponse = response;
         if (response.accessToken) {

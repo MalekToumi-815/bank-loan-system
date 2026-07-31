@@ -2,30 +2,3 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: ${ACCESS_TOKEN_EXPIRATION}
   refresh-token-expiration: ${REFRESH_TOKEN_EXPIRATION}
-
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/oauth_db
-    username: postgres
-    password: ${SPRING_DATASOURCE_PASSWORD:mlk123}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-  mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: 4f7baa9c480282
-    password: 95ede2c76c50d1
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-# Frontend URL (from .env) - used by services that need the Angular app URL
-angular_app_url: ${angular_app_url:http://localhost:4200}
