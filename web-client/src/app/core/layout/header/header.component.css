@@ -1,0 +1,133 @@
+.app-header {
+  height: var(--header-height, 60px);
+  background-color: var(--brand-primary, #0f1c30);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md, 8px);
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.4);
+}
+
+.brand-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
+}
+
+.brand-text h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.brand-text p {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.header-user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.375rem 0.75rem;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(15, 118, 110, 0.2);
+  border: 1px solid var(--brand-accent, #0f766e);
+  color: #2dd4bf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.user-email {
+  font-size: 0.725rem;
+  color: #94a3b8;
+}
+
+.role-badge {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.675rem;
+  font-weight: 700;
+  border-radius: 4px;
+  background-color: rgba(15, 118, 110, 0.2);
+  color: #2dd4bf;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  text-transform: uppercase;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 0.4rem 0.875rem;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition, all 0.2s ease);
+}
+
+.btn-logout:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.btn-logout svg {
+  width: 16px;
+  height: 16px;
+}

@@ -1,0 +1,22 @@
+.main-layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main, #0b1329);
+  color: var(--text-main, #f8fafc);
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.main-layout-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main-content-container {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: var(--bg-main, #0b1329);
+  height: calc(100vh - var(--header-height, 60px));
+}

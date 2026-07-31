@@ -17,7 +17,7 @@ export class Login {
   password = '';
   showPassword = false;
   errorMessage = '';
-  
+
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -29,7 +29,7 @@ export class Login {
   }
 
   //test methode for refresh token
-  refreshtest(){
+  refreshtest() {
     this.authService.fetchuser(2).subscribe({
       next: (user) => {
         console.log('User fetched successfully:', user);
@@ -40,12 +40,13 @@ export class Login {
     });
   }
 
-  
+
   onSubmit() {
     this.errorMessage = '';
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (response) => {
         console.log('Login successful!', response);
+        this.router.navigate(['/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
