@@ -28,18 +28,6 @@ export class Login {
     this.errorMessage = '';
   }
 
-  //test methode for refresh token
-  refreshtest() {
-    this.authService.fetchuser(2).subscribe({
-      next: (user) => {
-        console.log('User fetched successfully:', user);
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error('Error fetching user:', err);
-      }
-    });
-  }
-
 
   onSubmit() {
     this.errorMessage = '';

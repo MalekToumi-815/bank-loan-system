@@ -83,13 +83,4 @@ export class AuthService {
     this.loginResponse = null;
     this.currentUserSubject.next(null);
   }
-  //test refresh token
-  fetchuser(userId: number): Observable<UserResponse> {
-    return this.http.get<UserResponse>(`${this.baseUrl}account/users/${userId}`).pipe(
-      tap(user => {
-        this.currentUserSubject.next(user);
-        console.log('Current user loaded:', user);
-      })
-    );
-  }
 }
