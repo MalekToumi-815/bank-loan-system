@@ -47,10 +47,10 @@ public class LoanController {
         return loanService.getLoanByIdResponse(id);
     }
 
-    @PreAuthorize("hasRole('INTERNAL') || hasAuthority('MANAGE-LOANS')")
+    @PreAuthorize("hasRole('INTERNAL') || hasAuthority('MANAGE-LOANS') || hasAuthority('VIEW-LOAN')")
     @GetMapping
-    public ResponseEntity<List<LoanResponse>> getAllLoans() {
-        return loanService.getAllLoansResponse();
+    public ResponseEntity<List<LoanResponse>> getAllLoans(@RequestParam(required = false) Long clientId) {
+        return loanService.getAllLoansResponse(clientId);
     }
 
     @PreAuthorize("hasRole('INTERNAL') || hasAuthority('MANAGE-LOANS')")
@@ -93,5 +93,5 @@ public class LoanController {
         return loanService.updateAdminTaskResponse(id, task);
     }
 
-    //TODO: Add endpoint for recommendation officer task
+    // TODO: Add endpoint for recommendation officer task
 }

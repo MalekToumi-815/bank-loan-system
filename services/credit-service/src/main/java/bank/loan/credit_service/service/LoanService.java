@@ -37,7 +37,10 @@ public class LoanService {
         return loanRepository.findById(id).orElse(null);
     }
 
-    public List<Loan> getAllLoans() {
+    public List<Loan> getAllLoans(Long userId) {
+        if (userId != null) {
+            return loanRepository.findByClientId(userId);
+        }
         return loanRepository.findAll();
     }
 
@@ -128,8 +131,8 @@ public class LoanService {
         return ResponseEntity.ok(toLoanResponse(loan));
     }
 
-    public ResponseEntity<List<LoanResponse>> getAllLoansResponse() {
-        List<LoanResponse> loans = getAllLoans().stream()
+    public ResponseEntity<List<LoanResponse>> getAllLoansResponse(Long userId) {
+        List<LoanResponse> loans = getAllLoans(userId).stream()
                 .map(this::toLoanResponse)
                 .toList();
         return ResponseEntity.ok(loans);
