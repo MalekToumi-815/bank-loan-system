@@ -171,8 +171,7 @@ public class WorkflowService {
             case officer_validation -> setBooleanProcessVariable(task, taskVariables, "is_valid");
             case admin_approval -> completeAdminApprovalTask(loanId, task, taskVariables);
             case admin_decision -> completeAdminDecisionTask(loanId, task, taskVariables);
-            case officer_recommendation -> {//TODO: Implement officer recommendation task completion logic
-            }
+            case officer_recommendation -> completeOfficerRecommendationTask(loanId, taskVariables);
         }
 
         runtimeService.setVariables(task.getProcessInstanceId(), taskVariables);
@@ -187,6 +186,28 @@ public class WorkflowService {
                 .uri("/loans/{id}/receptionist-task", loanId)
                 .header("X-Internal-Secret", internalSecret)
                 .body(new ReceptionistTask(interestRate, LoanStatus.UNDER_REVIEW))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    private void completeOfficerRecommendationTask(Long loanId, Map<String, Object> variables) {
+        String riskScore = String.valueOf(variables.get("riskScore"));
+        String recommendation = String.valueOf(variables.get("recommendation"));
+
+        if (riskScore == null || riskScore.isBlank()) {
+            throw new IllegalArgumentException("riskScore is required for officer recommendation task");
+        }
+
+        if (recommendation == null || recommendation.isBlank()) {
+            throw new IllegalArgumentException("recommendation is required for officer recommendation task");
+        }
+
+        creditClient.post()
+                .uri("/loans/{id}/risk", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(Map.of(
+                        "riskScore", riskScore,
+                        "recommendation", recommendation))
                 .retrieve()
                 .toBodilessEntity();
     }
