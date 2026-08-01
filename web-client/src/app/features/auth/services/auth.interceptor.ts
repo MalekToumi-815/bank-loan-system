@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
@@ -7,7 +7,8 @@ let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
+  // Inject Injector instead of AuthService directly to avoid circular dependency (NG0200)
+  const injector = inject(Injector);
   const accessToken = localStorage.getItem('access_token');
 
   let authReq = req;
@@ -27,6 +28,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         !req.url.includes('/oauth/login') &&
         !req.url.includes('/oauth/refresh')
       ) {
+        // Lazily get AuthService ONLY when a 401 error occurs
+        const authService = injector.get(AuthService);
         return handle401Error(authReq, next, authService);
       }
 
