@@ -1,0 +1,106 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.my-tasks-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 0.2rem 0;
+}
+
+.my-tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.my-tasks-kicker {
+  margin: 0;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.my-tasks-title {
+  margin: 0.15rem 0 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.my-tasks-table-wrap {
+  border: 1px solid #d7dce3;
+  border-radius: 1rem;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.my-tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.my-tasks-table thead th {
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.94rem;
+  color: #334155;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.my-tasks-table tbody td {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-size: 0.98rem;
+}
+
+.my-tasks-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.my-tasks-task-name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.my-tasks-task-id {
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.my-tasks-button {
+  border: none;
+  border-radius: 0.75rem;
+  background: #e8f0ff;
+  color: #1d4ed8;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.my-tasks-loading,
+.my-tasks-empty,
+.my-tasks-error {
+  border-radius: 1rem;
+  padding: 1rem 1.15rem;
+  background: #ffffff;
+  border: 1px solid #d7dce3;
+  color: #334155;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+}
+
+.my-tasks-error {
+  color: #b91c1c;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
