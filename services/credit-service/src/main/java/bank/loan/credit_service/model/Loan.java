@@ -37,6 +37,9 @@ public class Loan {
     @OneToOne(mappedBy = "loan",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Ammortisation ammortisation;
 
+    @OneToOne(mappedBy = "loan",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private RiskAssessment riskAssessment;
+
     public Loan(float amount, LoanType type, int durationMonths) {
         this.submissionDate = new Date();
         this.amount = amount;
@@ -138,5 +141,13 @@ public class Loan {
 
     public void setAmmortisation(Ammortisation ammortisation) {
         this.ammortisation = ammortisation;
+    }
+
+    public RiskAssessment getRiskAssessment() {
+        return riskAssessment;
+    }
+
+    public void setRiskAssessment(RiskAssessment riskAssessment) {
+        this.riskAssessment = riskAssessment;
     }
 }

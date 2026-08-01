@@ -92,6 +92,17 @@ public class LoanController {
             @RequestBody AdminTask task) {
         return loanService.updateAdminTaskResponse(id, task);
     }
+    @PreAuthorize("hasRole('INTERNAL')")
+    @PostMapping("/{id}/risk")
+    public ResponseEntity<Map<String, Object>> createRiskAssessment(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+        return loanService.createRiskAssessmentResponse(id, payload);
+    }
 
-    // TODO: Add endpoint for recommendation officer task
+    @PreAuthorize("hasAuthority('VIEW-LOAN')")
+    @GetMapping("/{id}/risk")
+    public ResponseEntity<Map<String, Object>> getRiskAssessmentByLoanId(@PathVariable Long id) {
+        return loanService.getRiskAssessmentByLoanIdResponse(id);
+    }
 }

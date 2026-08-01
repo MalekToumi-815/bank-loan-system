@@ -16,18 +16,26 @@ import bank.loan.credit_service.dto.task.AdminTask;
 import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.Loan;
 import bank.loan.credit_service.model.LoanStatus;
+import bank.loan.credit_service.model.RiskAssessment;
+import bank.loan.credit_service.model.RiskScore;
 import bank.loan.credit_service.model.Role;
 import bank.loan.credit_service.repository.LoanRepository;
+import bank.loan.credit_service.repository.RiskAssessmentRepository;
 
 @Service
 public class LoanService {
 
     private final LoanRepository loanRepository;
+    private final RiskAssessmentRepository riskAssessmentRepository;
     private final RestClient restClient;
     private final String internalSecret;
 
-    public LoanService(LoanRepository loanRepository, RestClient.Builder restClientBuilder, @Value("${internal.shared-secret}") String internalSecret) {
+    public LoanService(LoanRepository loanRepository,
+                       RiskAssessmentRepository riskAssessmentRepository,
+                       RestClient.Builder restClientBuilder,
+                       @Value("${internal.shared-secret}") String internalSecret) {
         this.loanRepository = loanRepository;
+        this.riskAssessmentRepository = riskAssessmentRepository;
         this.restClient = restClientBuilder.build();
         this.internalSecret = internalSecret;
     }
@@ -146,6 +154,47 @@ public class LoanService {
 
         loanRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan deleted"));
+    }
+
+    public ResponseEntity<Map<String, Object>> createRiskAssessmentResponse(Long loanId, Map<String, String> payload) {
+        Loan loan = loanRepository.findById(loanId).orElse(null);
+        if (loan == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAILED", "message", "Loan not found"));
+        }
+
+        if (riskAssessmentRepository.findByLoanId(loanId).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("status", "FAILED", "message", "Risk assessment already exists for this loan"));
+        }
+
+        RiskScore riskScore = RiskScore.valueOf(payload.get("riskScore"));
+        String recommendation = payload.get("recommendation");
+        RiskAssessment riskAssessment = new RiskAssessment(loan, riskScore, recommendation);
+        riskAssessmentRepository.save(riskAssessment);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "status", "SUCCESS",
+                        "message", "Risk assessment created",
+                        "loanId", loanId,
+                        "riskScore", riskAssessment.getRiskScore().name(),
+                        "recommendation", riskAssessment.getRecommendation()));
+    }
+
+    public ResponseEntity<Map<String, Object>> getRiskAssessmentByLoanIdResponse(Long loanId) {
+        RiskAssessment riskAssessment = riskAssessmentRepository.findByLoanId(loanId).orElse(null);
+        if (riskAssessment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAILED", "message", "Risk assessment not found"));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "loanId", loanId,
+                "riskScore", riskAssessment.getRiskScore().name(),
+                "recommendation", riskAssessment.getRecommendation(),
+                "assessmentDate", riskAssessment.getAssessmentDate()));
     }
     
     private LoanResponse toLoanResponse(Loan loan) {
