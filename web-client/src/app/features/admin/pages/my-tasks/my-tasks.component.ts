@@ -122,10 +122,6 @@ type TaskFilter = 'validation' | 'decision';
                     <span>Status</span>
                     <strong>{{ statusLabel(loanDetails()?.status ?? null) }}</strong>
                   </div>
-                  <div class="admin-tasks-field-row admin-tasks-field-row-wide">
-                    <span>Decision</span>
-                    <strong>{{ loanDetails()?.finalDecision || '—' }}</strong>
-                  </div>
                 </div>
               }
 

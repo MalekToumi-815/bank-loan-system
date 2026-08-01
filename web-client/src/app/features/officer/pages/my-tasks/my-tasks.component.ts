@@ -119,10 +119,6 @@ type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
                 <span>Status</span>
                 <strong>{{ statusLabel(loanDetails()?.status ?? null) }}</strong>
               </div>
-              <div class="officer-tasks-field-row">
-                <span>Decision</span>
-                <strong>{{ loanDetails()?.finalDecision || '—' }}</strong>
-              </div>
             </div>
           }
 
