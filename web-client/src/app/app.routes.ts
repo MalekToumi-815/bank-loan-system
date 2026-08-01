@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
 import { DashboardPlaceholderComponent } from './core/layout/dashboard-placeholder/dashboard-placeholder.component';
 import { MyLoansComponent } from './features/client/pages/my-loans/my-loans.component';
+import { NewRequestComponent } from './features/client/pages/new-request/new-request.component';
 import { ProfilePageComponent } from './features/profile/pages/profile-page/profile-page.component';
 
 export const routes: Routes = [
@@ -12,6 +13,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: DashboardPlaceholderComponent },
       { path: 'my-loans', component: MyLoansComponent },
+      { path: 'new-request', component: NewRequestComponent },
       { path: 'profile', component: ProfilePageComponent }
     ]
   },

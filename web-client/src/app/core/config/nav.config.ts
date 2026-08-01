@@ -31,7 +31,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'New Request',
       icon: 'plus-circle',
-      route: '',
+      route: '/dashboard/new-request',
       roles: [UserRole.CLIENT],
       section: 'Loans'
     },
