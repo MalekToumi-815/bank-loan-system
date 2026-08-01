@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
@@ -236,7 +239,7 @@ public class WorkflowService {
         float amount = getFloatVariable(variables, "amount");
         int durationMonths = getIntVariable(variables, "durationMonths");
         String finalDecision = String.valueOf(variables.get("finalDecision"));
-        Date startDate = (Date) variables.get("startDate");
+        Date startDate = getDateVariable(variables, "startDate");
 
         variables.put("amount", amount);
         variables.put("durationMonths", durationMonths);
@@ -264,6 +267,24 @@ public class WorkflowService {
             return number.intValue();
         }
         return Integer.parseInt(String.valueOf(value));
+    }
+
+    private Date getDateVariable(Map<String, Object> variables, String variableName) {
+        Object value = variables.get(variableName);
+
+        if (value instanceof Date date) {
+            return date;
+        }
+
+        if (value instanceof String text && !text.isBlank()) {
+            try {
+                return Date.from(LocalDate.parse(text).atStartOfDay(ZoneId.systemDefault()).toInstant());
+            } catch (DateTimeParseException ex) {
+                return Date.from(java.time.Instant.parse(text));
+            }
+        }
+
+        throw new IllegalArgumentException(variableName + " is required");
     }
 
     //Fetching Active Users with a certain Role

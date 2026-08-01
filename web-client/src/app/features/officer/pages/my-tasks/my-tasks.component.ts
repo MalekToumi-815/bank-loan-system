@@ -6,6 +6,7 @@ import { ClientLoan } from '../../../client/models/client-loan.model';
 import { OfficerTask, OfficerTaskService } from '../../services/officer-task.service';
 
 type TaskFilter = 'validation' | 'recommendation';
+type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
 
 @Component({
   selector: 'app-officer-my-tasks',
@@ -49,9 +50,7 @@ type TaskFilter = 'validation' | 'recommendation';
               <tr>
                 <th>Task</th>
                 <th>Loan ID</th>
-                @if (selectedFilter() === 'validation') {
-                  <th>Details</th>
-                }
+                <th>Details</th>
               </tr>
             </thead>
             <tbody>
@@ -62,13 +61,11 @@ type TaskFilter = 'validation' | 'recommendation';
                     <div class="officer-tasks-task-id">{{ task.taskId }}</div>
                   </td>
                   <td>{{ task.loanId }}</td>
-                  @if (selectedFilter() === 'validation') {
-                    <td>
-                      <button class="officer-tasks-button" type="button" (click)="openTaskDialog(task)">
-                        Details
-                      </button>
-                    </td>
-                  }
+                  <td>
+                    <button class="officer-tasks-button" type="button" (click)="openTaskDialog(task)">
+                      Details
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -82,7 +79,7 @@ type TaskFilter = 'validation' | 'recommendation';
         <div class="officer-tasks-dialog" (click)="$event.stopPropagation()">
           <div class="officer-tasks-dialog-header">
             <div>
-              <p class="officer-tasks-dialog-kicker">Validation task</p>
+              <p class="officer-tasks-dialog-kicker">{{ selectedFilter() === 'validation' ? 'Validation task' : 'Recommendation task' }}</p>
               <h2>{{ selectedTask()?.taskName || 'Loan task' }}</h2>
             </div>
             <button class="officer-tasks-dialog-close" type="button" (click)="closeDialog()">×</button>
@@ -129,9 +126,38 @@ type TaskFilter = 'validation' | 'recommendation';
             </div>
           }
 
+          @if (selectedFilter() === 'recommendation') {
+            <div class="officer-tasks-form-wrap">
+              <label class="officer-tasks-form-label" for="recommendation-text">Recommendation</label>
+              <textarea
+                id="recommendation-text"
+                class="officer-tasks-textarea"
+                rows="4"
+                [value]="recommendationText()"
+                (input)="recommendationText.set($any($event.target).value)">
+              </textarea>
+
+              <label class="officer-tasks-form-label" for="risk-score-select">Risk Score</label>
+              <select
+                id="risk-score-select"
+                class="officer-tasks-select"
+                [value]="riskScore()"
+                (change)="riskScore.set($any($event.target).value)">
+                <option value="">Select risk score</option>
+                @for (score of riskScoreOptions; track score) {
+                  <option [value]="score">{{ score }}</option>
+                }
+              </select>
+            </div>
+          }
+
           <div class="officer-tasks-dialog-actions">
-            <button class="officer-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Accept</button>
-            <button class="officer-tasks-reject-button" type="button" (click)="completeValidationTask(false)">Reject</button>
+            @if (selectedFilter() === 'validation') {
+              <button class="officer-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Accept</button>
+              <button class="officer-tasks-reject-button" type="button" (click)="completeValidationTask(false)">Reject</button>
+            } @else {
+              <button class="officer-tasks-complete-button" type="button" (click)="completeRecommendationTask()">Complete task</button>
+            }
           </div>
 
           @if (dialogMessage()) {
@@ -160,6 +186,9 @@ export class OfficerMyTasksComponent {
   dialogMessageType = signal<'success' | 'error' | ''>('');
   selectedTask = signal<OfficerTask | null>(null);
   loanDetails = signal<ClientLoan | null>(null);
+  recommendationText = signal('');
+  riskScore = signal<RiskScore | ''>('');
+  readonly riskScoreOptions: RiskScore[] = ['ONE', 'TWO', 'THREE', 'FOUR'];
 
   readonly assigneeId = computed(() => this.currentUser()?.id ?? null);
   readonly filteredTasks = computed(() => {
@@ -197,9 +226,50 @@ export class OfficerMyTasksComponent {
     this.dialogOpen.set(false);
     this.selectedTask.set(null);
     this.loanDetails.set(null);
+    this.recommendationText.set('');
+    this.riskScore.set('');
     this.dialogError.set(null);
     this.dialogMessage.set('');
     this.dialogMessageType.set('');
+  }
+
+  completeRecommendationTask() {
+    const task = this.selectedTask();
+    const recommendation = this.recommendationText().trim();
+    const riskScore = this.riskScore();
+
+    if (!task) {
+      this.setDialogMessage('Please select a task first.', 'error');
+      return;
+    }
+
+    if (!recommendation) {
+      this.setDialogMessage('Please enter a recommendation before completing the task.', 'error');
+      return;
+    }
+
+    if (!riskScore) {
+      this.setDialogMessage('Please select a risk score before completing the task.', 'error');
+      return;
+    }
+
+    this.taskService.completeRecommendationTask(task.taskId, riskScore, recommendation).subscribe({
+      next: () => {
+        this.setDialogMessage('Recommendation task completed successfully.', 'success');
+        this.dialogOpen.set(false);
+        this.selectedTask.set(null);
+        this.loanDetails.set(null);
+        this.recommendationText.set('');
+        this.riskScore.set('');
+        const assigneeId = this.assigneeId();
+        if (assigneeId != null) {
+          this.loadTasks(assigneeId);
+        }
+      },
+      error: () => {
+        this.setDialogMessage('Unable to complete the recommendation task right now.', 'error');
+      }
+    });
   }
 
   completeValidationTask(isValid: boolean) {

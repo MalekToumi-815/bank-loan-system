@@ -33,4 +33,11 @@ export class OfficerTaskService {
       is_valid: isValid
     });
   }
+
+  completeRecommendationTask(taskId: string, riskScore: string, recommendation: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}workflow/tasks/${taskId}/complete`, {
+      riskScore,
+      recommendation
+    });
+  }
 }

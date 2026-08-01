@@ -3,21 +3,21 @@
   width: 100%;
 }
 
-.officer-tasks-page {
+.admin-tasks-page {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
   padding: 0.2rem 0;
 }
 
-.officer-tasks-header {
+.admin-tasks-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.officer-tasks-kicker {
+.admin-tasks-kicker {
   margin: 0;
   color: #0f172a;
   text-transform: uppercase;
@@ -26,21 +26,21 @@
   font-weight: 700;
 }
 
-.officer-tasks-title {
+.admin-tasks-title {
   margin: 0.15rem 0 0;
   font-size: 2rem;
   font-weight: 800;
   color: #0f172a;
 }
 
-.officer-tasks-toolbar {
+.admin-tasks-toolbar {
   display: flex;
   align-items: center;
   gap: 0.7rem;
   flex-wrap: wrap;
 }
 
-.officer-tasks-filter {
+.admin-tasks-filter {
   border: 1px solid #cbd5e1;
   border-radius: 999px;
   background: #ffffff;
@@ -51,13 +51,13 @@
   cursor: pointer;
 }
 
-.officer-tasks-filter.active {
+.admin-tasks-filter.active {
   background: #dbeafe;
   color: #1d4ed8;
   border-color: #93c5fd;
 }
 
-.officer-tasks-table-wrap {
+.admin-tasks-table-wrap {
   border: 1px solid #d7dce3;
   border-radius: 1rem;
   background: #ffffff;
@@ -65,12 +65,12 @@
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
-.officer-tasks-table {
+.admin-tasks-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.officer-tasks-table thead th {
+.admin-tasks-table thead th {
   text-align: left;
   padding: 1rem;
   font-size: 0.94rem;
@@ -79,31 +79,32 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-.officer-tasks-table tbody td {
+.admin-tasks-table tbody td {
   padding: 1rem;
   border-bottom: 1px solid #e2e8f0;
   color: #0f172a;
   font-size: 0.98rem;
 }
 
-.officer-tasks-table tbody tr:last-child td {
+.admin-tasks-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.officer-tasks-task-name {
+.admin-tasks-task-name {
   font-weight: 700;
   color: #0f172a;
 }
 
-.officer-tasks-task-id {
+.admin-tasks-task-id {
   margin-top: 0.25rem;
   color: #64748b;
   font-size: 0.82rem;
 }
 
-.officer-tasks-button,
-.officer-tasks-accept-button,
-.officer-tasks-reject-button {
+.admin-tasks-button,
+.admin-tasks-accept-button,
+.admin-tasks-reject-button,
+.admin-tasks-complete-button {
   border: none;
   border-radius: 0.75rem;
   padding: 0.55rem 0.9rem;
@@ -112,35 +113,29 @@
   cursor: pointer;
 }
 
-.officer-tasks-button {
+.admin-tasks-button {
   background: #e8f0ff;
   color: #1d4ed8;
 }
 
-.officer-tasks-accept-button {
+.admin-tasks-accept-button {
   background: #dcfce7;
   color: #166534;
 }
 
-.officer-tasks-reject-button {
+.admin-tasks-reject-button {
   background: #fee2e2;
   color: #b91c1c;
 }
 
-.officer-tasks-complete-button {
-  border: none;
-  border-radius: 0.75rem;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
+.admin-tasks-complete-button {
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-.officer-tasks-loading,
-.officer-tasks-empty,
-.officer-tasks-error {
+.admin-tasks-loading,
+.admin-tasks-empty,
+.admin-tasks-error {
   border-radius: 1rem;
   padding: 1rem 1.15rem;
   background: #ffffff;
@@ -149,13 +144,13 @@
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
 }
 
-.officer-tasks-error {
+.admin-tasks-error {
   color: #b91c1c;
   background: #fff1f2;
   border-color: #fecdd3;
 }
 
-.officer-tasks-dialog-backdrop {
+.admin-tasks-dialog-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.42);
@@ -166,16 +161,18 @@
   z-index: 1000;
 }
 
-.officer-tasks-dialog {
-  width: min(640px, 100%);
+.admin-tasks-dialog {
+  width: min(1080px, 100%);
   background: #ffffff;
   border-radius: 1rem;
   border: 1px solid #d7dce3;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
   padding: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
 }
 
-.officer-tasks-dialog-header {
+.admin-tasks-dialog-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -183,7 +180,7 @@
   margin-bottom: 0.9rem;
 }
 
-.officer-tasks-dialog-kicker {
+.admin-tasks-dialog-kicker {
   margin: 0 0 0.15rem;
   color: #64748b;
   text-transform: uppercase;
@@ -192,13 +189,13 @@
   font-weight: 700;
 }
 
-.officer-tasks-dialog-header h2 {
+.admin-tasks-dialog-header h2 {
   margin: 0;
   color: #0f172a;
   font-size: 1.2rem;
 }
 
-.officer-tasks-dialog-close {
+.admin-tasks-dialog-close {
   border: none;
   background: transparent;
   color: #64748b;
@@ -206,14 +203,18 @@
   cursor: pointer;
 }
 
-.officer-tasks-dialog-grid {
+.admin-tasks-dialog-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
   margin: 1rem 0;
 }
 
-.officer-tasks-field-row {
+.admin-tasks-field-row-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-tasks-field-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -224,31 +225,86 @@
   border: 1px solid #e2e8f0;
 }
 
-.officer-tasks-field-row span {
+.admin-tasks-field-row span,
+.admin-tasks-risk-row span,
+.admin-tasks-risk-recommendation span {
   color: #64748b;
   font-size: 0.88rem;
 }
 
-.officer-tasks-field-row strong {
+.admin-tasks-field-row strong,
+.admin-tasks-risk-row strong {
   color: #0f172a;
   font-size: 0.94rem;
 }
 
-.officer-tasks-form-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  margin-top: 1rem;
+.admin-tasks-risk-card {
+  margin-top: 0.9rem;
+  border-radius: 0.9rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0.95rem;
 }
 
-.officer-tasks-form-label {
+.admin-tasks-risk-card-title {
+  margin-bottom: 0.75rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.admin-tasks-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-tasks-risk-row {
+  padding: 0.8rem 0.85rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-tasks-risk-recommendation {
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-tasks-risk-recommendation p {
+  margin: 0.35rem 0 0;
+  color: #0f172a;
+  line-height: 1.5;
+}
+
+.admin-tasks-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0;
+}
+
+.admin-tasks-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.admin-tasks-form-label {
   color: #0f172a;
   font-size: 0.9rem;
   font-weight: 700;
 }
 
-.officer-tasks-textarea,
-.officer-tasks-select {
+.admin-tasks-input {
   width: 100%;
   border: 1px solid #cbd5e1;
   border-radius: 0.75rem;
@@ -259,54 +315,93 @@
   box-sizing: border-box;
 }
 
-.officer-tasks-textarea {
-  resize: vertical;
-  min-height: 110px;
-}
-
-.officer-tasks-textarea:focus,
-.officer-tasks-select:focus {
+.admin-tasks-input:focus {
   outline: none;
   border-color: #60a5fa;
   box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
-.officer-tasks-dialog-actions {
-  margin-top: 1rem;
+.admin-tasks-dialog-actions {
+  margin-top: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.officer-tasks-dialog-loading,
-.officer-tasks-dialog-message,
-.officer-tasks-dialog-error {
+.admin-tasks-dialog-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.admin-tasks-dialog-main,
+.admin-tasks-dialog-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.admin-tasks-task-panel {
+  border: 1px solid #d7dce3;
+  border-radius: 0.95rem;
+  background: #ffffff;
+  padding: 0.95rem;
+}
+
+.admin-tasks-task-panel-title {
+  margin-bottom: 0.8rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.admin-tasks-task-panel-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.admin-tasks-dialog-loading,
+.admin-tasks-dialog-message,
+.admin-tasks-dialog-error {
   border-radius: 0.85rem;
   padding: 0.8rem 0.9rem;
   margin-top: 0.85rem;
 }
 
-.officer-tasks-dialog-loading {
+.admin-tasks-dialog-loading {
   background: #f8fafc;
   color: #334155;
   border: 1px solid #d7dce3;
 }
 
-.officer-tasks-dialog-error,
-.officer-tasks-dialog-message.error {
+.admin-tasks-dialog-error,
+.admin-tasks-dialog-message.error {
   background: #fff1f2;
   color: #b91c1c;
   border: 1px solid #fecdd3;
 }
 
-.officer-tasks-dialog-message {
+.admin-tasks-dialog-message {
   background: #ecfdf5;
   color: #166534;
   border: 1px solid #a7f3d0;
 }
 
 @media (max-width: 700px) {
-  .officer-tasks-dialog-grid {
+  .admin-tasks-dialog-grid,
+  .admin-tasks-risk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-tasks-dialog-body {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-tasks-form-grid {
     grid-template-columns: 1fr;
   }
 }
