@@ -4,16 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ClientLoan } from '../../models/client-loan.model';
 import { ClientLoanService } from '../../services/client-loan.service';
-
-interface LoanFieldView {
-  label: string;
-  value: string;
-}
+import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-details-dialog/loan-details-dialog.component';
 
 @Component({
   selector: 'app-my-loans',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoanDetailsDialogComponent],
   styleUrl: './my-loans.component.css',
   template: `
     <section class="my-loans-page">
@@ -72,6 +68,7 @@ interface LoanFieldView {
                 <th>Amount</th>
                 <th>Submitted</th>
                 <th>Status</th>
+                <th>Details</th>
               </tr>
             </thead>
             <tbody>
@@ -83,6 +80,11 @@ interface LoanFieldView {
                   <td>{{ formatDate(loan.submissionDate) }}</td>
                   <td>
                     <span class="my-loans-pill {{ statusClass(loan) }}">{{ statusLabel(loan) }}</span>
+                  </td>
+                  <td>
+                    @if (isApproved(loan)) {
+                      <button class="my-loans-details-button" type="button" (click)="openLoanDialog(loan)">Details</button>
+                    }
                   </td>
                 </tr>
               }
@@ -96,6 +98,14 @@ interface LoanFieldView {
           No matching loan requests were found.
         </div>
       }
+
+      <app-loan-details-dialog
+        [open]="detailsOpen()"
+        [loan]="selectedLoan()"
+        title="Loan details"
+        kicker="Approved loan"
+        (closed)="closeLoanDialog()"
+      />
     </section>
   `
 })
@@ -109,6 +119,8 @@ export class MyLoansComponent {
   error = signal<string | null>(null);
   selectedFilter = signal<'All' | 'Submitted' | 'Under review' | 'Approved' | 'Rejected'>('All');
   searchTerm = signal('');
+  detailsOpen = signal(false);
+  selectedLoan = signal<ClientLoan | null>(null);
 
   readonly currentClientId = computed(() => this.currentUser()?.id ?? null);
 
@@ -139,17 +151,14 @@ export class MyLoansComponent {
     });
   }
 
-  visibleFields(loan: ClientLoan): LoanFieldView[] {
-    const fields: LoanFieldView[] = [
-      { label: 'Loan ID', value: String(loan.id ?? '') },
-      { label: 'Submitted', value: this.formatDate(loan.submissionDate) },
-      { label: 'Amount', value: this.formatAmount(loan.amount) },
-      { label: 'Duration', value: this.formatDuration(loan.durationMonths) },
-      { label: 'Interest Rate', value: this.formatPercent(loan.interestRate) },
-      { label: 'Decision', value: loan.finalDecision ?? '' }
-    ];
+  openLoanDialog(loan: ClientLoan) {
+    this.selectedLoan.set(loan);
+    this.detailsOpen.set(true);
+  }
 
-    return fields.filter(field => this.isRenderable(field.value));
+  closeLoanDialog() {
+    this.detailsOpen.set(false);
+    this.selectedLoan.set(null);
   }
 
   loanLabel(loan: ClientLoan): string {
@@ -203,7 +212,7 @@ export class MyLoansComponent {
     return (loan.status?.toUpperCase() ?? '') === 'UNDER_REVIEW';
   }
 
-  private isApproved(loan: ClientLoan): boolean {
+  isApproved(loan: ClientLoan): boolean {
     return (loan.status?.toUpperCase() ?? '') === 'APPROVED';
   }
 
@@ -251,25 +260,5 @@ export class MyLoansComponent {
     }
 
     return `${value.toLocaleString()} DT`;
-  }
-
-  private formatDuration(value: number | null): string {
-    if (value == null || value === 0) {
-      return '';
-    }
-
-    return `${value} months`;
-  }
-
-  private formatPercent(value: number | null): string {
-    if (value == null || value === 0) {
-      return '';
-    }
-
-    return `${value}%`;
-  }
-
-  private isRenderable(value: string): boolean {
-    return value != null && value !== '' && value !== '0';
   }
 }
