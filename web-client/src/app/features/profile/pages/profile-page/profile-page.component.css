@@ -1,0 +1,154 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.25rem 0;
+}
+
+.profile-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.profile-subtitle {
+  margin: 0.35rem 0 0;
+  color: #475569;
+  font-size: 1rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1.65fr 0.9fr;
+  gap: 1.5rem;
+}
+
+.profile-panel {
+  background: #ffffff;
+  border: 1px solid #d7dce3;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.profile-panel h2,
+.profile-panel h3 {
+  margin: 0 0 1rem;
+  color: #0f172a;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.profile-field.full {
+  grid-column: 1 / -1;
+}
+
+.profile-field label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.profile-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.7rem;
+  padding: 0.78rem 0.9rem;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.98rem;
+}
+
+.profile-input:disabled {
+  background: #eef2f7;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.profile-actions {
+  margin-top: 1.2rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.profile-button,
+.profile-button-secondary {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-button {
+  background: linear-gradient(135deg, #0f2d5a, #0a3f7c);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+}
+
+.profile-button-secondary {
+  background: #eff6ff;
+  color: #0f3f85;
+  border: 1px solid #bfdbfe;
+}
+
+.profile-account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-account-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.profile-account-row span:first-child {
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.profile-account-row strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.profile-message {
+  margin-top: 0.9rem;
+  font-size: 0.94rem;
+  color: #0f766e;
+}
+
+.profile-message.error {
+  color: #b91c1c;
+}
+
+@media (max-width: 960px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

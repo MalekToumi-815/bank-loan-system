@@ -45,7 +45,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Profile',
       icon: 'user',
-      route: '',
+      route: '/dashboard/profile',
       roles: [UserRole.CLIENT],
       section: 'Account'
     }
@@ -70,7 +70,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Profile',
       icon: 'user',
-      route: '',
+      route: '/dashboard/profile',
       roles: [UserRole.BANK_RECEPTIONIST],
       section: 'Account'
     }
@@ -95,7 +95,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Profile',
       icon: 'user',
-      route: '',
+      route: '/dashboard/profile',
       roles: [UserRole.LOAN_OFFICER],
       section: 'Account'
     }
@@ -120,7 +120,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Profile',
       icon: 'user',
-      route: '',
+      route: '/dashboard/profile',
       roles: [UserRole.BANK_ADMIN],
       section: 'Account'
     }

@@ -37,12 +37,22 @@ export class AuthService {
       switchMap(response =>
         this.http.get<UserResponse>(`${this.baseUrl}account/users/${response.userId}`).pipe(
           tap(user => {
-            this.currentUserSubject.next(user);
+            this.setCurrentUser(user);
             console.log('Current user loaded:', user);
           }),
           mapTo(response)
         )
       )
+    );
+  }
+
+  setCurrentUser(user: UserResponse | null): void {
+    this.currentUserSubject.next(user);
+  }
+
+  refreshCurrentUser(userId: number): Observable<UserResponse> {
+    return this.http.get<UserResponse>(`${this.baseUrl}account/users/${userId}`).pipe(
+      tap(user => this.setCurrentUser(user))
     );
   }
 
