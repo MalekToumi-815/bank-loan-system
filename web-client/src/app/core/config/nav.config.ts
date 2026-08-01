@@ -88,9 +88,16 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Dashboard',
       icon: 'dashboard',
-      route: '',
+      route: '/dashboard',
       roles: [UserRole.LOAN_OFFICER],
       section: 'Overview'
+    },
+    {
+      label: 'My Tasks',
+      icon: 'file-text',
+      route: '/dashboard/officer-tasks',
+      roles: [UserRole.LOAN_OFFICER],
+      section: 'Tasks'
     },
     {
       label: 'Notifications',

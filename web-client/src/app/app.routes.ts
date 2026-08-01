@@ -4,6 +4,7 @@ import { DashboardPlaceholderComponent } from './core/layout/dashboard-placehold
 import { MyLoansComponent } from './features/client/pages/my-loans/my-loans.component';
 import { NewRequestComponent } from './features/client/pages/new-request/new-request.component';
 import { MyTasksComponent } from './features/receptionist/pages/my-tasks/my-tasks.component';
+import { OfficerMyTasksComponent } from './features/officer/pages/my-tasks/my-tasks.component';
 import { ProfilePageComponent } from './features/profile/pages/profile-page/profile-page.component';
 
 export const routes: Routes = [
@@ -16,6 +17,7 @@ export const routes: Routes = [
       { path: 'my-loans', component: MyLoansComponent },
       { path: 'new-request', component: NewRequestComponent },
       { path: 'my-tasks', component: MyTasksComponent },
+      { path: 'officer-tasks', component: OfficerMyTasksComponent },
       { path: 'profile', component: ProfilePageComponent }
     ]
   },
