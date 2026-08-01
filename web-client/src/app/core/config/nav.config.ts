@@ -17,14 +17,14 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Dashboard',
       icon: 'dashboard',
-      route: '',
+      route: '/dashboard',
       roles: [UserRole.CLIENT],
       section: 'Overview'
     },
     {
       label: 'My Requests',
       icon: 'file-text',
-      route: '',
+      route: '/dashboard/my-loans',
       roles: [UserRole.CLIENT],
       section: 'Loans'
     },
