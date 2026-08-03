@@ -55,6 +55,7 @@ public class WorkflowService {
         this.internalSecret = internalSecret;
     }
 
+    //Start Workflow and handle rollback in case of failure
     public ResponseEntity<Map<String, Object>> startWorkflow(LoanRequest request, Long clientId) {
         Long loanId = null; 
         String processInstanceId = null;
@@ -132,6 +133,8 @@ public class WorkflowService {
         }
     }
 
+
+    // Fetch tasks assigned to a specific user
     public ResponseEntity<List<TaskResponseDto>> getTasks(String assignee) {
         List<Task> tasks = taskService.createTaskQuery()
                 .taskAssignee(assignee)
@@ -156,6 +159,8 @@ public class WorkflowService {
         return ResponseEntity.ok(response);
     }
 
+
+    // Complete a task and handle specific logic based on the task type
     public ResponseEntity<Void> completeTask(String taskId, Map<String, Object> variables) {
         Task task = taskService.createTaskQuery()
                 .taskId(taskId)
@@ -301,6 +306,7 @@ public class WorkflowService {
                 .body(new ParameterizedTypeReference<List<UserResponse>>() {});
     }
 
+    // Fetch a single user by ID
     public UserResponse fetchUser(Long userId) {
         return accountClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -315,6 +321,7 @@ public class WorkflowService {
     public record UserResponse(Long id, String name, String email, String role, String surname) {}
 
     //Admin monitoring methods
+    // Fetch tasks by task definition key (optional)
     public ResponseEntity<List<TaskResponseDto>> getTasksByKey(String taskKey) {
         var query = taskService.createTaskQuery().active();
         
@@ -339,6 +346,7 @@ public class WorkflowService {
         return ResponseEntity.ok(response);
     }
 
+    // Fetch active process instances
     public ResponseEntity<List<ProcessInstanceDto>> getActiveInstances() {
         List<ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
                 .active()
@@ -358,6 +366,7 @@ public class WorkflowService {
         return ResponseEntity.ok(response);
     }
 
+    // Fetch historic (inactive) process instances
     public ResponseEntity<List<HistoricProcessInstanceDto>> getInactiveInstances() {
         // Query process instances that have finished (completed or deleted)
         List<HistoricProcessInstance> historicInstances = historyService.createHistoricProcessInstanceQuery()
@@ -382,7 +391,6 @@ public class WorkflowService {
                 inst.getProcessDefinitionKey(),
                 inst.getStartTime(),
                 inst.getEndTime(),
-                inst.getDeleteReason(),
                 loanId
             );
         }).toList();
@@ -390,6 +398,7 @@ public class WorkflowService {
         return ResponseEntity.ok(response);
     }
 
+    // Fetch assignees for a specific task
     public ResponseEntity<List<UserResponse>> getAssignees(String taskid){
         Task task = taskService.createTaskQuery()
                 .taskId(taskid)

@@ -7,6 +7,5 @@ public record HistoricProcessInstanceDto(
     String processDefinitionKey,
     Date startTime,
     Date endTime,
-    String deleteReason, 
     Long loanId
 ) {}
