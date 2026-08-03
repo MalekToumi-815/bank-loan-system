@@ -19,6 +19,7 @@ import bank.loan.workflow_service.dto.LoanRequest;
 import bank.loan.workflow_service.dto.ProcessInstanceDto;
 import bank.loan.workflow_service.dto.TaskResponseDto;
 import bank.loan.workflow_service.service.WorkflowService;
+import bank.loan.workflow_service.service.WorkflowService.UserResponse;
 
 @RestController
 @RequestMapping("/workflow")
@@ -64,5 +65,11 @@ public class WorkflowController {
     @GetMapping("/admin/tasks")
     public ResponseEntity<List<TaskResponseDto>> getTasksByKey(@RequestParam(required = false) String taskKey) {
         return workflowService.getTasksByKey(taskKey);
+    }
+
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
+    @GetMapping("/admin/tasks/{taskId}/assignees")
+    public ResponseEntity<List<UserResponse>> getTaskAssignees(@PathVariable String taskId) {
+        return workflowService.getAssignees(taskId);
     }
 }
