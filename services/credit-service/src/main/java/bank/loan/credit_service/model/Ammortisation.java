@@ -14,6 +14,9 @@ public class Ammortisation {
     @JoinColumn(name = "loan_id", nullable = false)
     private Loan loan;  
 
+    @OneToMany(mappedBy = "ammortisation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Installement> installements;
+
     Date startDate;
     Date endDate;
 
@@ -66,5 +69,13 @@ public class Ammortisation {
 
     public void setNumberofInstalments(int numberofInstalments) {
         this.numberofInstalments = numberofInstalments;
+    }
+
+    public java.util.List<Installement> getInstallements() {
+        return installements;
+    }
+
+    public void setInstallements(java.util.List<Installement> installements) {
+        this.installements = installements;
     }
 }
