@@ -324,6 +324,7 @@ public class LoanService {
             return getInstallementsByLoanIdResponse(loanId, 0);
         }
 
+        @Transactional
         public ResponseEntity<Map<String, Object>> getInstallementsByLoanIdResponse(Long loanId, Integer page) {
             Loan loan = loanRepository.findById(loanId).orElse(null);
             if (loan == null) {

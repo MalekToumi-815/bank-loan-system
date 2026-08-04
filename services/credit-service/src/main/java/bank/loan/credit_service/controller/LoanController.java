@@ -120,8 +120,8 @@ public class LoanController {
     }
 
     @PreAuthorize("hasAuthority('VIEW-LOAN')")
-    @PostMapping("/{id}/pay-installement")
-    public ResponseEntity<Map<String, String>> payInstallement(@PathVariable Long installementId) {
+    @PutMapping("/{id}/pay-installement")
+    public ResponseEntity<Map<String, String>> payInstallement(@PathVariable("id") Long installementId) {
         return loanService.payInstallement(installementId);
     }
 }
