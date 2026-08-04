@@ -428,4 +428,17 @@ public class WorkflowService {
 
         assignees.add(fetchUser(userId));
     }
+
+    //generate Amortization Schedule for a specific loan
+    public ResponseEntity<Map<String, String>> generateAmortizationSchedule(Long loanId) {
+        creditClient.post()
+                .uri("/loans/{id}/ammortisation", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .retrieve()
+                .toBodilessEntity();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Amortization schedule generated successfully for loan ID: " + loanId);
+        return ResponseEntity.ok(response);
+    }
 }
