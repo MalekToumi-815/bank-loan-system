@@ -18,11 +18,13 @@ import bank.loan.credit_service.dto.task.AdminTask;
 import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.Ammortisation;
 import bank.loan.credit_service.model.Installement;
+import bank.loan.credit_service.model.InstallementStatus;
 import bank.loan.credit_service.model.Loan;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.model.RiskAssessment;
 import bank.loan.credit_service.model.RiskScore;
 import bank.loan.credit_service.model.Role;
+import bank.loan.credit_service.repository.InstallementRepository;
 import bank.loan.credit_service.repository.LoanRepository;
 import bank.loan.credit_service.repository.RiskAssessmentRepository;
 import jakarta.transaction.Transactional;
@@ -32,15 +34,18 @@ public class LoanService {
 
     private final LoanRepository loanRepository;
     private final RiskAssessmentRepository riskAssessmentRepository;
+    private final InstallementRepository installementRepository;
     private final RestClient restClient;
     private final String internalSecret;
 
     public LoanService(LoanRepository loanRepository,
                        RiskAssessmentRepository riskAssessmentRepository,
+                       InstallementRepository installementRepository,
                        RestClient.Builder restClientBuilder,
                        @Value("${internal.shared-secret}") String internalSecret) {
         this.loanRepository = loanRepository;
         this.riskAssessmentRepository = riskAssessmentRepository;
+        this.installementRepository = installementRepository;
         this.restClient = restClientBuilder.build();
         this.internalSecret = internalSecret;
     }
@@ -291,7 +296,7 @@ public class LoanService {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("status", "SUCCESS", "message", "Ammortisation created for loan ID: " + loanId));
         }
-        
+
         private void generateInstallements(Ammortisation ammortisation) {
             java.util.ArrayList<Installement> installements = new java.util.ArrayList<>();
             //calculate installement amount
@@ -312,5 +317,81 @@ public class LoanService {
                 installements.add(installement);
             }
             ammortisation.setInstallements(installements);
+        }
+
+        //Get installements by loan ID with pagination
+        public ResponseEntity<Map<String, Object>> getInstallementsByLoanIdResponse(Long loanId) {
+            return getInstallementsByLoanIdResponse(loanId, 0);
+        }
+
+        public ResponseEntity<Map<String, Object>> getInstallementsByLoanIdResponse(Long loanId, Integer page) {
+            Loan loan = loanRepository.findById(loanId).orElse(null);
+            if (loan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Loan not found"));
+            }
+
+            Ammortisation ammortisation = loan.getAmmortisation();
+            if (ammortisation == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Ammortisation not found for this loan"));
+            }
+
+            int pageNumber = (page == null || page < 0) ? 0 : page;
+            final int pageSize = 10;
+            List<Installement> all = ammortisation.getInstallements();
+            int totalItems = all == null ? 0 : all.size();
+            int fromIndex = pageNumber * pageSize;
+            List<Map<String, Object>> installementsList;
+
+            if (all == null || fromIndex >= totalItems) {
+                installementsList = java.util.Collections.emptyList();
+            } else {
+                installementsList = all.stream()
+                        .skip(fromIndex)
+                        .limit(pageSize)
+                        .map(installement -> {
+                            Map<String, Object> item = new java.util.HashMap<>();
+                            item.put("id", installement.getId());
+                            item.put("dueDate", installement.getDueDate());
+                            item.put("amount", installement.getAmount());
+                            item.put("status", installement.getStatus().name());
+                            return item;
+                        })
+                        .toList();
+            }
+
+            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "SUCCESS",
+                    "loanId", loanId,
+                    "startDate", ammortisation.getStartDate(),
+                    "endDate", ammortisation.getEndDate(),
+                    "page", pageNumber,
+                    "pageSize", pageSize,
+                    "totalPages", totalPages,
+                    "totalItems", totalItems,
+                    "installements", installementsList
+            ));
+        }
+
+        public ResponseEntity<Map<String, String>> payInstallement(Long installementId) {
+            Installement installement = installementRepository.findById(installementId).orElse(null);
+        
+            if (installement == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Installement not found"));
+            }
+        
+            try {
+                installement.setStatus(InstallementStatus.PAID);
+                // Persist the installement change
+                installementRepository.save(installement);
+                return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Installement status updated"));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("status", "FAILED", "message", "Invalid status value"));
+            }
         }
 }

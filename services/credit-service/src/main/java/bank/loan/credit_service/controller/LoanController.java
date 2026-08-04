@@ -105,4 +105,23 @@ public class LoanController {
     public ResponseEntity<Map<String, Object>> getRiskAssessmentByLoanId(@PathVariable Long id) {
         return loanService.getRiskAssessmentByLoanIdResponse(id);
     }
+
+    @PreAuthorize("hasRole('INTERNAL')")
+    @PostMapping("/{id}/ammortisation")
+    public ResponseEntity<Map<String, String>> createAmmortisation(@PathVariable Long id) {
+        return loanService.createAmmortisationResponse(id);
+    }
+
+    @PreAuthorize("hasAuthority('VIEW-LOAN')")
+    @GetMapping("/{id}/ammortisation")
+    public ResponseEntity<Map<String, Object>> getAmmortisationByLoanId(@PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page) {
+        return loanService.getInstallementsByLoanIdResponse(id, page);
+    }
+
+    @PreAuthorize("hasAuthority('VIEW-LOAN')")
+    @PostMapping("/{id}/pay-installement")
+    public ResponseEntity<Map<String, String>> payInstallement(@PathVariable Long installementId) {
+        return loanService.payInstallement(installementId);
+    }
 }
