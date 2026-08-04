@@ -1,5 +1,7 @@
 package bank.loan.credit_service.service;
 
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,8 @@ import bank.loan.credit_service.dto.loan.LoanRequest;
 import bank.loan.credit_service.dto.loan.LoanResponse;
 import bank.loan.credit_service.dto.task.AdminTask;
 import bank.loan.credit_service.dto.task.ReceptionistTask;
+import bank.loan.credit_service.model.Ammortisation;
+import bank.loan.credit_service.model.Installement;
 import bank.loan.credit_service.model.Loan;
 import bank.loan.credit_service.model.LoanStatus;
 import bank.loan.credit_service.model.RiskAssessment;
@@ -21,6 +25,7 @@ import bank.loan.credit_service.model.RiskScore;
 import bank.loan.credit_service.model.Role;
 import bank.loan.credit_service.repository.LoanRepository;
 import bank.loan.credit_service.repository.RiskAssessmentRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class LoanService {
@@ -244,5 +249,68 @@ public class LoanService {
                         .body(Map.of("status", "FAILED", "message", "Loan not found"));
             }
             return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Loan admin fields updated"));
+        }
+
+        //Ammortisation related methods
+
+        @Transactional 
+        public ResponseEntity<Map<String, String>> createAmmortisationResponse(Long loanId) {
+            Loan loan = loanRepository.findById(loanId).orElse(null);
+            if (loan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Loan not found"));
+            }
+        
+            // Safety check for startDate
+            Date startDate = loan.getStartDate();
+            if (startDate == null) {
+                startDate = new Date(); // Or throw a bad request exception
+                loan.setStartDate(startDate);
+            }
+        
+            // Calculate end date based on start date and duration
+            Date endDate = Date.from(
+                startDate.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                        .plusMonths(loan.getDurationMonths())
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+            );
+        
+            // Create ammortisation object
+            Ammortisation ammortisation = new Ammortisation(loan, startDate, endDate, loan.getDurationMonths());
+            
+            // Generate installments BEFORE saving the parent loan/ammortisation
+            generateInstallements(ammortisation);
+            
+            // Set relation & save everything atomically
+            loan.setAmmortisation(ammortisation);
+            loanRepository.save(loan);
+        
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("status", "SUCCESS", "message", "Ammortisation created for loan ID: " + loanId));
+        }
+        
+        private void generateInstallements(Ammortisation ammortisation) {
+            java.util.ArrayList<Installement> installements = new java.util.ArrayList<>();
+            //calculate installement amount
+            float interestammount = ammortisation.getLoan().getAmount() * (ammortisation.getLoan().getInterestRate() / 100);
+            float totalAmount = ammortisation.getLoan().getAmount() + interestammount;
+            float installementAmount = totalAmount / ammortisation.getNumberofInstalments();
+            Date startDate = ammortisation.getStartDate();
+            for (int i = 1; i <= ammortisation.getNumberofInstalments(); i++) {
+                Date dueDate = Date.from(
+                    startDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .plusMonths(i)
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toInstant()
+                );
+                Installement installement = new Installement(ammortisation, dueDate, installementAmount);
+                installements.add(installement);
+            }
+            ammortisation.setInstallements(installements);
         }
 }
