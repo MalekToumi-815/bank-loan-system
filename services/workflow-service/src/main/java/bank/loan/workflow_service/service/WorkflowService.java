@@ -398,37 +398,6 @@ public class WorkflowService {
         return ResponseEntity.ok(response);
     }
 
-    // Fetch assignees for a specific task
-    public ResponseEntity<List<UserResponse>> getAssignees(String taskid){
-        Task task = taskService.createTaskQuery()
-                .taskId(taskid)
-                .singleResult();
-
-        if (task == null) {
-            throw new IllegalArgumentException("Task not found: " + taskid);
-        }
-
-        List<UserResponse> assignees = new ArrayList<>();
-
-        addAssigneeIfPresent(assignees, runtimeService.getVariable(task.getExecutionId(), "bank_admin_id"));
-        addAssigneeIfPresent(assignees, runtimeService.getVariable(task.getExecutionId(), "loan_officer_id"));
-        addAssigneeIfPresent(assignees, runtimeService.getVariable(task.getExecutionId(), "receptionist_id"));
-
-        return ResponseEntity.ok(assignees);
-    }
-
-    private void addAssigneeIfPresent(List<UserResponse> assignees, Object userIdValue) {
-        if (userIdValue == null) {
-            return;
-        }
-
-        Long userId = userIdValue instanceof Number number
-                ? number.longValue()
-                : Long.valueOf(String.valueOf(userIdValue));
-
-        assignees.add(fetchUser(userId));
-    }
-
     //generate Amortization Schedule for a specific loan
     public ResponseEntity<Map<String, String>> generateAmortizationSchedule(Long loanId) {
         creditClient.post()

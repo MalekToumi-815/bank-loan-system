@@ -66,10 +66,4 @@ public class WorkflowController {
     public ResponseEntity<List<TaskResponseDto>> getTasksByKey(@RequestParam(required = false) String taskKey) {
         return workflowService.getTasksByKey(taskKey);
     }
-
-    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
-    @GetMapping("/admin/tasks/{taskId}/assignees")
-    public ResponseEntity<List<UserResponse>> getTaskAssignees(@PathVariable String taskId) {
-        return workflowService.getAssignees(taskId);
-    }
 }
