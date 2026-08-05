@@ -14,6 +14,12 @@ public record LoanResponse(
         float interestRate,
         String workflowProcessInstanceId,
         LoanStatus status,
-        String finalDecision
+        String finalDecision,
+        Long clientId,
+        Long receptionistId,
+        Long creditOfficerId,
+        Long bankAdminId,
+        String OfficerrejectionReason,
+        String AdminrejectionReason
 ) {
 }

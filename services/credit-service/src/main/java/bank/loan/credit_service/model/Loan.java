@@ -12,6 +12,9 @@ public class Loan {
 
     @Column(nullable = false)
     private Long clientId; // reference to account-service's User
+    private Long receptionistId; // reference to account-service's User
+    private Long creditOfficerId; // reference to account-service's User
+    private Long bankAdminId; // reference to account-service's User
 
     private Date submissionDate;
     private Date startDate;
@@ -31,6 +34,8 @@ public class Loan {
     private LoanStatus status;
 
     private String finalDecision;
+    private String OfficerrejectionReason;
+    private String AdminrejectionReason;
 
     private String workflowProcessInstanceId; // links to Flowable's running instance 
 
@@ -149,5 +154,45 @@ public class Loan {
 
     public void setRiskAssessment(RiskAssessment riskAssessment) {
         this.riskAssessment = riskAssessment;
+    }
+
+    public Long getReceptionistId() {
+        return receptionistId;
+    }
+
+    public void setReceptionistId(Long receptionistId) {
+        this.receptionistId = receptionistId;
+    }
+
+    public Long getCreditOfficerId() {
+        return creditOfficerId;
+    }
+
+    public void setCreditOfficerId(Long creditOfficerId) {
+        this.creditOfficerId = creditOfficerId;
+    }
+
+    public Long getBankAdminId() {
+        return bankAdminId;
+    }
+
+    public void setBankAdminId(Long bankAdminId) {
+        this.bankAdminId = bankAdminId;
+    }
+
+    public String getOfficerrejectionReason() {
+        return OfficerrejectionReason;
+    }
+
+    public void setOfficerrejectionReason(String officerrejectionReason) {
+        OfficerrejectionReason = officerrejectionReason;
+    }
+
+    public String getAdminrejectionReason() {
+        return AdminrejectionReason;
+    }
+
+    public void setAdminrejectionReason(String adminrejectionReason) {
+        AdminrejectionReason = adminrejectionReason;
     }
 }

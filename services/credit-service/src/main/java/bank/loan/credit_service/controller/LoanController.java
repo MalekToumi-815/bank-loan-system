@@ -21,6 +21,7 @@ import bank.loan.credit_service.dto.loan.LoanResponse;
 import bank.loan.credit_service.dto.task.AdminTask;
 import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.LoanStatus;
+import bank.loan.credit_service.model.Role;
 import bank.loan.credit_service.service.LoanService;
 
 @RestController
@@ -123,5 +124,25 @@ public class LoanController {
     @PutMapping("/{id}/pay-installement")
     public ResponseEntity<Map<String, String>> payInstallement(@PathVariable("id") Long installementId) {
         return loanService.payInstallement(installementId);
+    }
+
+    @PreAuthorize("hasRole('INTERNAL')")
+    @PostMapping("/{id}/assign-user")
+    public ResponseEntity<Map<String, String>> assignUserToLoan(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+        Long userId = payload.get("userId") == null ? null : Long.valueOf(payload.get("userId").toString());
+        Role role = Role.valueOf(payload.get("role").toString());
+        return loanService.assignUserToLoan(id, userId, role);
+    }
+
+    @PreAuthorize("hasRole('INTERNAL')")
+    @PostMapping("/{id}/rejection-reason")
+    public ResponseEntity<Map<String, String>> setRejectionReason(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+        String reason = payload.get("reason") == null ? null : payload.get("reason").toString();
+        Role role = Role.valueOf(payload.get("role").toString());
+        return loanService.setRejectionReason(id, reason, role);
     }
 }

@@ -217,7 +217,14 @@ public class LoanService {
                 loan.getInterestRate(),
                 loan.getWorkflowProcessInstanceId(),
                 loan.getStatus(),
-                loan.getFinalDecision());
+                loan.getFinalDecision(),
+                loan.getClientId(),
+                loan.getReceptionistId(),
+                loan.getCreditOfficerId(),
+                loan.getBankAdminId(),
+                loan.getOfficerrejectionReason(),
+                loan.getAdminrejectionReason()
+        );
     }
 
     public ResponseEntity<Map<String, String>> updateLoanStatusResponse(Long id, LoanStatus status) {
@@ -394,5 +401,57 @@ public class LoanService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("status", "FAILED", "message", "Invalid status value"));
             }
+        }
+
+        // Assignment of users to loans
+        public ResponseEntity<Map<String, String>> assignUserToLoan(Long loanId, Long userId, Role role) {
+            if (loanId == null || userId == null || role == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("status", "FAILED", "message", "Loan ID, user ID, and role are required"));
+            }
+
+            Loan loan = loanRepository.findById(loanId).orElse(null);
+            if (loan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Loan not found"));
+            }
+
+            switch (role) {
+                case Role.BANK_RECEPTIONIST -> loan.setReceptionistId(userId);
+                case Role.LOAN_OFFICER -> loan.setCreditOfficerId(userId);
+                case Role.BANK_ADMIN -> loan.setBankAdminId(userId);
+                default -> {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("status", "FAILED", "message", "Unsupported role for loan assignment"));
+                }
+            }
+
+            loanRepository.save(loan);
+            return ResponseEntity.ok(Map.of(
+                    "status", "SUCCESS",
+                    "message", "User assigned to loan successfully"));
+        }
+
+        // setRejectionReason for Officer and Admin
+        public ResponseEntity<Map<String, String>> setRejectionReason(Long loanId, String reason, Role role) {
+            Loan loan = loanRepository.findById(loanId).orElse(null);
+            if (loan == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "FAILED", "message", "Loan not found"));
+            }
+
+            switch (role) {
+                case Role.LOAN_OFFICER -> loan.setOfficerrejectionReason(reason);
+                case Role.BANK_ADMIN -> loan.setAdminrejectionReason(reason);
+                default -> {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("status", "FAILED", "message", "Unsupported role for setting rejection reason"));
+                }
+            }
+
+            loanRepository.save(loan);
+            return ResponseEntity.ok(Map.of(
+                    "status", "SUCCESS",
+                    "message", "Rejection reason set successfully"));
         }
 }
