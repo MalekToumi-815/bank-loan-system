@@ -48,6 +48,20 @@ import { ClientLoan } from '../../../features/client/models/client-loan.model';
               <span>Decision</span>
               <strong>{{ loan?.finalDecision || '—' }}</strong>
             </div>
+
+            @if (isApprovedStatus(loan?.status ?? null)) {
+              <div class="loan-details-card loan-details-card-wide">
+                <span>Start date</span>
+                <strong>{{ formatDateValue(loan?.startDate ?? null) }}</strong>
+              </div>
+            }
+
+            @if (isRejectedStatus(loan?.status ?? null)) {
+              <div class="loan-details-card loan-details-card-wide">
+                <span>Rejection reason</span>
+                <strong>{{ loan?.AdminrejectionReason || '—' }}</strong>
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -90,6 +104,31 @@ export class LoanDetailsDialogComponent {
     }
 
     return `${value.toLocaleString()} DT`;
+  }
+
+  formatDateValue(value: string | null): string {
+    if (!value) {
+      return '—';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('en', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  isApprovedStatus(status: string | null): boolean {
+    return (status?.toUpperCase() ?? '') === 'APPROVED';
+  }
+
+  isRejectedStatus(status: string | null): boolean {
+    return (status?.toUpperCase() ?? '') === 'REJECTED';
   }
 
   formatDuration(value: number | null): string {

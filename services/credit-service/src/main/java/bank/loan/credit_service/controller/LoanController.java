@@ -127,7 +127,7 @@ public class LoanController {
     }
 
     @PreAuthorize("hasRole('INTERNAL')")
-    @PostMapping("/{id}/assign-user")
+    @PutMapping("/{id}/assign-user")
     public ResponseEntity<Map<String, String>> assignUserToLoan(
             @PathVariable Long id,
             @RequestBody Map<String, Object> payload) {
@@ -137,7 +137,7 @@ public class LoanController {
     }
 
     @PreAuthorize("hasRole('INTERNAL')")
-    @PostMapping("/{id}/rejection-reason")
+    @PutMapping("/{id}/rejection-reason")
     public ResponseEntity<Map<String, String>> setRejectionReason(
             @PathVariable Long id,
             @RequestBody Map<String, Object> payload) {

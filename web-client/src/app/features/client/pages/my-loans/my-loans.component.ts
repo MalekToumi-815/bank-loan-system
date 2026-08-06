@@ -82,7 +82,7 @@ import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-d
                     <span class="my-loans-pill {{ statusClass(loan) }}">{{ statusLabel(loan) }}</span>
                   </td>
                   <td>
-                    @if (isApproved(loan)) {
+                    @if (isApproved(loan) || isRejected(loan)) {
                       <button class="my-loans-details-button" type="button" (click)="openLoanDialog(loan)">Details</button>
                     }
                   </td>
@@ -216,7 +216,7 @@ export class MyLoansComponent {
     return (loan.status?.toUpperCase() ?? '') === 'APPROVED';
   }
 
-  private isRejected(loan: ClientLoan): boolean {
+  isRejected(loan: ClientLoan): boolean {
     return (loan.status?.toUpperCase() ?? '') === 'REJECTED';
   }
 

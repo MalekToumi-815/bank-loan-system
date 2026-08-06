@@ -103,6 +103,12 @@ import { ReceptionistTask, ReceptionistTaskService } from '../../services/recept
                 <span>Status</span>
                 <strong>{{ statusLabel(loanDetails()?.status ?? null) }}</strong>
               </div>
+              @if (loanDetails()?.OfficerrejectionReason) {
+                <div class="my-tasks-field-row">
+                  <span>Officer rejection reason</span>
+                  <strong>{{ loanDetails()?.OfficerrejectionReason }}</strong>
+                </div>
+              }
             </div>
           }
 

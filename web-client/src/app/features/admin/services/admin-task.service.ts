@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { UserResponse } from '../../auth/models/auth.model';
 import { ClientLoan } from '../../client/models/client-loan.model';
 
 export interface AdminTask {
@@ -38,6 +39,10 @@ export class AdminTaskService {
 
   getLoanRiskById(loanId: number): Observable<AdminRiskAssessment> {
     return this.http.get<AdminRiskAssessment>(`${this.baseUrl}credit/loans/${loanId}/risk`);
+  }
+
+  getUser(userId: number): Observable<UserResponse> {
+    return this.http.get<UserResponse>(`${this.baseUrl}account/users/${userId}`);
   }
 
   completeValidationTask(taskId: string, isApproved: boolean, rejectionReason?: string): Observable<void> {

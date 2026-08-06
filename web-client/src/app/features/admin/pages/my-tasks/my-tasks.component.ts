@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from '../../../auth/services/auth.service';
+import { UserResponse } from '../../../auth/models/auth.model';
 import { ClientLoan } from '../../../client/models/client-loan.model';
 import { AdminRiskAssessment, AdminTask, AdminTaskService } from '../../services/admin-task.service';
 
@@ -121,6 +123,26 @@ type TaskFilter = 'validation' | 'decision';
                   <div class="admin-tasks-field-row">
                     <span>Status</span>
                     <strong>{{ statusLabel(loanDetails()?.status ?? null) }}</strong>
+                  </div>
+                </div>
+              }
+
+              @if (!dialogLoading() && loanDetails()) {
+                <div class="admin-tasks-risk-card" style="margin-top: 12px;">
+                  <div class="admin-tasks-risk-card-title">Assignees</div>
+                  <div class="admin-tasks-risk-grid">
+                    <div class="admin-tasks-risk-row">
+                      <span>Receptionist</span>
+                      <strong>{{ formatAssignee(assigneeDetails().receptionist) }}</strong>
+                    </div>
+                    <div class="admin-tasks-risk-row">
+                      <span>Credit officer</span>
+                      <strong>{{ formatAssignee(assigneeDetails().creditOfficer) }}</strong>
+                    </div>
+                    <div class="admin-tasks-risk-row">
+                      <span>Bank admin</span>
+                      <strong>{{ formatAssignee(assigneeDetails().bankAdmin) }}</strong>
+                    </div>
                   </div>
                 </div>
               }
@@ -265,6 +287,11 @@ export class AdminMyTasksComponent {
   selectedTask = signal<AdminTask | null>(null);
   loanDetails = signal<ClientLoan | null>(null);
   riskAssessment = signal<AdminRiskAssessment | null>(null);
+  assigneeDetails = signal<{ receptionist: UserResponse | null; creditOfficer: UserResponse | null; bankAdmin: UserResponse | null }>({
+    receptionist: null,
+    creditOfficer: null,
+    bankAdmin: null
+  });
   amountInput: number | null = null;
   finalDecisionInput = '';
   durationMonthsInput: number | null = null;
@@ -302,6 +329,7 @@ export class AdminMyTasksComponent {
     this.dialogMessageType.set('');
     this.loanDetails.set(null);
     this.riskAssessment.set(null);
+    this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
     this.amountInput = null;
     this.finalDecisionInput = '';
     this.durationMonthsInput = null;
@@ -316,6 +344,7 @@ export class AdminMyTasksComponent {
     this.selectedTask.set(null);
     this.loanDetails.set(null);
     this.riskAssessment.set(null);
+    this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
     this.amountInput = null;
     this.finalDecisionInput = '';
     this.durationMonthsInput = null;
@@ -346,6 +375,7 @@ export class AdminMyTasksComponent {
         this.selectedTask.set(null);
         this.loanDetails.set(null);
         this.riskAssessment.set(null);
+        this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
         this.rejectionReasonInput = '';
         this.showRejectionReasonInput.set(false);
         const assigneeId = this.assigneeId();
@@ -380,6 +410,7 @@ export class AdminMyTasksComponent {
         this.selectedTask.set(null);
         this.loanDetails.set(null);
         this.riskAssessment.set(null);
+        this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
         this.rejectionReasonInput = '';
         this.showRejectionReasonInput.set(false);
         const assigneeId = this.assigneeId();
@@ -432,6 +463,7 @@ export class AdminMyTasksComponent {
         this.selectedTask.set(null);
         this.loanDetails.set(null);
         this.riskAssessment.set(null);
+        this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
         this.amountInput = null;
         this.finalDecisionInput = '';
         this.durationMonthsInput = null;
@@ -475,6 +507,7 @@ export class AdminMyTasksComponent {
       next: response => {
         this.loanDetails.set(response.loan);
         this.riskAssessment.set(response.riskAssessment);
+        this.loadAssigneeDetails(response.loan);
       },
       error: () => {
         this.dialogError.set('Unable to load the selected loan and risk details.');
@@ -485,9 +518,62 @@ export class AdminMyTasksComponent {
     });
   }
 
+  private loadAssigneeDetails(loan: ClientLoan) {
+    const requests = [
+      this.buildAssigneeRequest(loan.receptionistId, 'receptionist'),
+      this.buildAssigneeRequest(loan.creditOfficerId, 'creditOfficer'),
+      this.buildAssigneeRequest(loan.bankAdminId, 'bankAdmin')
+    ];
+
+    forkJoin(requests).subscribe({
+      next: results => {
+        const nextDetails = {
+          receptionist: null as UserResponse | null,
+          creditOfficer: null as UserResponse | null,
+          bankAdmin: null as UserResponse | null
+        };
+
+        results.forEach(result => {
+          if (result.key === 'receptionist') {
+            nextDetails.receptionist = result.user;
+          }
+          if (result.key === 'creditOfficer') {
+            nextDetails.creditOfficer = result.user;
+          }
+          if (result.key === 'bankAdmin') {
+            nextDetails.bankAdmin = result.user;
+          }
+        });
+
+        this.assigneeDetails.set(nextDetails);
+      },
+      error: () => {
+        this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
+      }
+    });
+  }
+
+  private buildAssigneeRequest(userId: number | null, key: 'receptionist' | 'creditOfficer' | 'bankAdmin') {
+    if (userId == null) {
+      return of({ key, user: null as UserResponse | null });
+    }
+
+    return this.taskService.getUser(userId).pipe(
+      map(user => ({ key, user }))
+    );
+  }
+
   private setDialogMessage(message: string, type: 'success' | 'error') {
     this.dialogMessage.set(message);
     this.dialogMessageType.set(type);
+  }
+
+  formatAssignee(user: UserResponse | null): string {
+    if (!user) {
+      return 'Unassigned';
+    }
+
+    return `${user.name} ${user.surname} (ID: ${user.id})`;
   }
 
   loanTypeLabel(type: string | null): string {
