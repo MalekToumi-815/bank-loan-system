@@ -211,6 +211,7 @@ public class LoanService {
         return new LoanResponse(
                 loan.getId(),
                 loan.getSubmissionDate(),
+                loan.getStartDate(),
                 loan.getAmount(),
                 loan.getType(),
                 loan.getDurationMonths(),
