@@ -149,12 +149,27 @@ type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
 
           <div class="officer-tasks-dialog-actions">
             @if (selectedFilter() === 'validation') {
-              <button class="officer-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Accept</button>
-              <button class="officer-tasks-reject-button" type="button" (click)="completeValidationTask(false)">Reject</button>
+              <button class="officer-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Validate</button>
+              <button class="officer-tasks-reject-button" type="button" (click)="showRejectionReasonInput.set(true)">Reject</button>
             } @else {
               <button class="officer-tasks-complete-button" type="button" (click)="completeRecommendationTask()">Complete task</button>
             }
           </div>
+
+          @if (selectedFilter() === 'validation' && showRejectionReasonInput()) {
+            <div class="officer-tasks-form-wrap">
+              <label class="officer-tasks-form-label" for="rejection-reason">Rejection reason</label>
+              <textarea
+                id="rejection-reason"
+                class="officer-tasks-textarea"
+                rows="4"
+                [value]="rejectionReason()"
+                (input)="rejectionReason.set($any($event.target).value)">
+              </textarea>
+
+              <button class="officer-tasks-complete-button" type="button" (click)="submitRejection()">Submit rejection</button>
+            </div>
+          }
 
           @if (dialogMessage()) {
             <div class="officer-tasks-dialog-message" [class.error]="dialogMessageType() === 'error'">
@@ -184,6 +199,8 @@ export class OfficerMyTasksComponent {
   loanDetails = signal<ClientLoan | null>(null);
   recommendationText = signal('');
   riskScore = signal<RiskScore | ''>('');
+  rejectionReason = signal('');
+  showRejectionReasonInput = signal(false);
   readonly riskScoreOptions: RiskScore[] = ['ONE', 'TWO', 'THREE', 'FOUR'];
 
   readonly assigneeId = computed(() => this.currentUser()?.id ?? null);
@@ -215,6 +232,8 @@ export class OfficerMyTasksComponent {
     this.dialogMessage.set('');
     this.dialogMessageType.set('');
     this.loanDetails.set(null);
+    this.rejectionReason.set('');
+    this.showRejectionReasonInput.set(false);
     this.loadLoan(task.loanId);
   }
 
@@ -227,6 +246,8 @@ export class OfficerMyTasksComponent {
     this.dialogError.set(null);
     this.dialogMessage.set('');
     this.dialogMessageType.set('');
+    this.rejectionReason.set('');
+    this.showRejectionReasonInput.set(false);
   }
 
   completeRecommendationTask() {
@@ -275,12 +296,52 @@ export class OfficerMyTasksComponent {
       return;
     }
 
-    this.taskService.completeValidationTask(task.taskId, isValid).subscribe({
+    if (!isValid) {
+      this.showRejectionReasonInput.set(true);
+      return;
+    }
+
+    this.taskService.completeValidationTask_true(task.taskId, true).subscribe({
       next: () => {
-        this.setDialogMessage(isValid ? 'Task accepted successfully.' : 'Task rejected successfully.', 'success');
+        this.setDialogMessage('Task validated successfully.', 'success');
         this.dialogOpen.set(false);
         this.selectedTask.set(null);
         this.loanDetails.set(null);
+        this.rejectionReason.set('');
+        this.showRejectionReasonInput.set(false);
+        const assigneeId = this.assigneeId();
+        if (assigneeId != null) {
+          this.loadTasks(assigneeId);
+        }
+      },
+      error: () => {
+        this.setDialogMessage('Unable to complete the validation task right now.', 'error');
+      }
+    });
+  }
+
+  submitRejection() {
+    const task = this.selectedTask();
+    const reason = this.rejectionReason().trim();
+
+    if (!task) {
+      this.setDialogMessage('Please select a task first.', 'error');
+      return;
+    }
+
+    if (!reason) {
+      this.setDialogMessage('Please provide a rejection reason before submitting.', 'error');
+      return;
+    }
+
+    this.taskService.completeValidationTask_false(task.taskId, false, reason).subscribe({
+      next: () => {
+        this.setDialogMessage('Task rejected successfully.', 'success');
+        this.dialogOpen.set(false);
+        this.selectedTask.set(null);
+        this.loanDetails.set(null);
+        this.rejectionReason.set('');
+        this.showRejectionReasonInput.set(false);
         const assigneeId = this.assigneeId();
         if (assigneeId != null) {
           this.loadTasks(assigneeId);

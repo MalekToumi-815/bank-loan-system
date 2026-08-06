@@ -28,9 +28,16 @@ export class OfficerTaskService {
     return this.http.get<ClientLoan>(`${this.baseUrl}credit/loans/${loanId}`);
   }
 
-  completeValidationTask(taskId: string, isValid: boolean): Observable<void> {
+  completeValidationTask_true(taskId: string, isValid: boolean): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}workflow/tasks/${taskId}/complete`, {
       is_valid: isValid
+    });
+  }
+
+  completeValidationTask_false(taskId: string, isValid: boolean, rejectionReason: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}workflow/tasks/${taskId}/complete`, {
+      is_valid: isValid,
+      rejectionReason: rejectionReason
     });
   }
 

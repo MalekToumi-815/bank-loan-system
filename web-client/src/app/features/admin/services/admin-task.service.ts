@@ -40,9 +40,10 @@ export class AdminTaskService {
     return this.http.get<AdminRiskAssessment>(`${this.baseUrl}credit/loans/${loanId}/risk`);
   }
 
-  completeValidationTask(taskId: string, isApproved: boolean): Observable<void> {
+  completeValidationTask(taskId: string, isApproved: boolean, rejectionReason?: string): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}workflow/tasks/${taskId}/complete`, {
-      is_approved: isApproved
+      is_approved: isApproved,
+      ...(rejectionReason ? { rejectionReason } : {})
     });
   }
 
