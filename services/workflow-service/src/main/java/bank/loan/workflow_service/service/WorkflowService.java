@@ -177,7 +177,7 @@ public class WorkflowService {
 
         switch (TaskKeys.valueOf(task.getTaskDefinitionKey())) {
             case receptionist_create_loan -> completeReceptionistTask(loanId, taskVariables);
-            case officer_validation -> setBooleanProcessVariable(task, taskVariables, "is_valid");
+            case officer_validation -> completeOfficerValidationTask(loanId, task, taskVariables);
             case admin_approval -> completeAdminApprovalTask(loanId, task, taskVariables);
             case admin_decision -> completeAdminDecisionTask(loanId, task, taskVariables);
             case officer_recommendation -> completeOfficerRecommendationTask(loanId, taskVariables);
@@ -229,9 +229,19 @@ public class WorkflowService {
         variables.put(variableName, value);
     }
 
+    private void completeOfficerValidationTask(Long loanId, Task task, Map<String, Object> variables) {
+        setBooleanProcessVariable(task, variables, "is_valid");
+        handleRejectionReasonIfNeeded(loanId, variables, "is_valid", "rejectionReason", Role.LOAN_OFFICER);
+    }
+
     private void completeAdminApprovalTask(Long loanId, Task task, Map<String, Object> variables) {
         setBooleanProcessVariable(task, variables, "is_approved");
         boolean approved = (Boolean) variables.get("is_approved");
+
+        if (!approved) {
+            String rejectionReason = getRequiredStringVariable(variables, "rejectionReason");
+            updateRejectionReason(loanId, rejectionReason, Role.BANK_ADMIN);
+        }
 
         creditClient.put()
                 .uri("/loans/{id}/status", loanId)
@@ -239,6 +249,30 @@ public class WorkflowService {
                 .body(Map.of("status", approved ? LoanStatus.APPROVED.name() : LoanStatus.REJECTED.name()))
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    private void handleRejectionReasonIfNeeded(Long loanId, Map<String, Object> variables, String booleanVariableName, String reasonVariableName, Role role) {
+        Object value = variables.get(booleanVariableName);
+        boolean accepted = value instanceof Boolean booleanValue ? booleanValue : Boolean.parseBoolean(String.valueOf(value));
+
+        if (!accepted) {
+            String rejectionReason = getRequiredStringVariable(variables, reasonVariableName);
+            updateRejectionReason(loanId, rejectionReason, role);
+        }
+    }
+
+    private String getRequiredStringVariable(Map<String, Object> variables, String variableName) {
+        Object value = variables.get(variableName);
+        if (value == null) {
+            throw new IllegalArgumentException(variableName + " is required when the decision is false");
+        }
+
+        String text = String.valueOf(value).trim();
+        if (text.isBlank()) {
+            throw new IllegalArgumentException(variableName + " is required when the decision is false");
+        }
+
+        return text;
     }
 
     private void completeAdminDecisionTask(Long loanId, Task task, Map<String, Object> variables) {
@@ -408,6 +442,34 @@ public class WorkflowService {
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Amortization schedule generated successfully for loan ID: " + loanId);
+        return ResponseEntity.ok(response);
+    }
+
+    //update loan employee assignments
+    public ResponseEntity<Map<String, String>> updateLoanAssignments(Long loanId, Long employeeId, Role role) {
+        creditClient.put()
+                .uri("/loans/{id}/assign-user", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(Map.of("userId", employeeId, "role", role))
+                .retrieve()
+                .toBodilessEntity();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Loan assignments updated successfully for loan ID: " + loanId);
+        return ResponseEntity.ok(response);
+    }
+
+    //update rejection reasons for a specific loan
+    public ResponseEntity<Map<String, String>> updateRejectionReason(Long loanId, String reason, Role role) {
+        creditClient.put()
+                .uri("/loans/{id}/rejection-reason", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(Map.of("reason", reason, "role", role))
+                .retrieve()
+                .toBodilessEntity();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Rejection reason updated successfully for loan ID: " + loanId);
         return ResponseEntity.ok(response);
     }
 }

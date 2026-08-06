@@ -21,6 +21,7 @@ public class AssignAdminDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
+        Long loanId = (Long) execution.getVariable("loanId");
         List<UserResponse> activeAdmins = workflowService.fetchUsers(Role.BANK_ADMIN);
 
         if (activeAdmins == null || activeAdmins.isEmpty()) {
@@ -31,5 +32,6 @@ public class AssignAdminDelegate implements JavaDelegate {
         UserResponse selectedAdmin = activeAdmins.get(randomIndex);
         System.out.println("[SERVICE TASK] Automatically assigned Bank Admin (" + selectedAdmin.id() + ")...");
         execution.setVariable("bank_admin_id", selectedAdmin.id());
+        workflowService.updateLoanAssignments(loanId, selectedAdmin.id(), Role.BANK_ADMIN);
     }
 }

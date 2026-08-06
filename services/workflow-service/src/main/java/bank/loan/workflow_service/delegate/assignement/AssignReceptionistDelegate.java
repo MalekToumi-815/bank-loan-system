@@ -22,6 +22,7 @@ public class AssignReceptionistDelegate implements JavaDelegate {
     @Override
     public void execute(DelegateExecution execution) {
         List<UserResponse> activeReceptionists = workflowService.fetchUsers(Role.BANK_RECEPTIONIST);
+        Long loanId = (Long) execution.getVariable("loanId");
 
         if (activeReceptionists == null || activeReceptionists.isEmpty()) {
             throw new IllegalStateException("Cannot assign loan: No active bank receptionists found.");
@@ -31,5 +32,6 @@ public class AssignReceptionistDelegate implements JavaDelegate {
         UserResponse selectedReceptionist = activeReceptionists.get(randomIndex);
         System.out.println("[SERVICE TASK] Automatically assigned Bank Receptionist (" + selectedReceptionist.id() + ")...");
         execution.setVariable("receptionist_id", selectedReceptionist.id());
+        workflowService.updateLoanAssignments(loanId, selectedReceptionist.id(), Role.BANK_RECEPTIONIST);
     }
 }

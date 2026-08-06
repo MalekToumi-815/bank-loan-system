@@ -20,6 +20,7 @@ public class AssignOfficerDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
+        Long loanId = (Long) execution.getVariable("loanId");
         // Fetch using the new shared function
         List<UserResponse> activeOfficers = WorkflowService.fetchUsers(Role.LOAN_OFFICER);
 
@@ -32,5 +33,6 @@ public class AssignOfficerDelegate implements JavaDelegate {
         UserResponse selectedOfficer = activeOfficers.get(randomIndex);
         System.out.println("[SERVICE TASK] Automatically assigned Bank Officer (" + selectedOfficer.id() + ")...");
         execution.setVariable("loan_officer_id", selectedOfficer.id());
+        WorkflowService.updateLoanAssignments(loanId, selectedOfficer.id(), Role.LOAN_OFFICER);
     }
 }
