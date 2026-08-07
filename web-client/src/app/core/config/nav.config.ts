@@ -132,6 +132,13 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
       section: 'Tasks'
     },
     {
+      label: 'Users',
+      icon: 'user',
+      route: '/dashboard/admin-users',
+      roles: [UserRole.BANK_ADMIN],
+      section: 'Management'
+    },
+    {
       label: 'Notifications',
       icon: 'bell',
       route: '',
