@@ -6,6 +6,7 @@ public record ProcessInstanceDto(
         String processInstanceId,
         String processDefinitionKey,
         Date startTime,
-        Long loanId
+        Long loanId,
+        String status
 ) {
 }

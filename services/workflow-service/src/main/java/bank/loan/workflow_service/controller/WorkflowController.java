@@ -60,6 +60,12 @@ public class WorkflowController {
     public ResponseEntity<List<ProcessInstanceDto>> getActiveInstances() {
         return workflowService.getActiveInstances();
     }
+    
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW') || hasRole('INTERNAL')")
+    @GetMapping("/admin/instances/{processInstanceId}")
+    public ResponseEntity<ProcessInstanceDto> getProcessInstanceById(@PathVariable String processInstanceId) {
+        return workflowService.getProcessInstanceById(processInstanceId);
+    }
 
     @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
     @GetMapping("/admin/tasks")

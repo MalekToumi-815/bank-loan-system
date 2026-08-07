@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
@@ -382,23 +383,80 @@ public class WorkflowService {
 
     // Fetch active process instances
     public ResponseEntity<List<ProcessInstanceDto>> getActiveInstances() {
-        List<ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
+    List<ProcessInstance> instances = runtimeService.createProcessInstanceQuery()
+            .active()
+            .list();
+
+    List<ProcessInstanceDto> response = instances.stream().map(inst -> {
+        // 1. Fetch active user tasks for this process instance
+        List<Task> activeTasks = taskService.createTaskQuery()
+                .processInstanceId(inst.getId())
                 .active()
                 .list();
 
-        List<ProcessInstanceDto> response = instances.stream().map(inst -> {
-            // You can pull variables tied to the instance if needed
-            Long loanId = (Long) runtimeService.getVariable(inst.getId(), "loanId");
-            return new ProcessInstanceDto(
+        // 2. Extract task names (handles parallel tasks or fallback for system tasks)
+        String currentTaskName = activeTasks.isEmpty() 
+                ? "System Processing" // Shown when execution is at a Java Delegate / Service Task
+                : activeTasks.stream()
+                        .map(Task::getName)
+                        .collect(Collectors.joining(", "));
+
+        // 3. Safely extract loanId variable
+        Object rawLoanId = runtimeService.getVariable(inst.getId(), "loan_id");
+        if (rawLoanId == null) {
+            rawLoanId = runtimeService.getVariable(inst.getId(), "loanId");
+        }
+        Long loanId = (rawLoanId instanceof Number n) ? n.longValue() : null;
+
+        return new ProcessInstanceDto(
                 inst.getId(),
                 inst.getProcessDefinitionKey(),
                 inst.getStartTime(),
-                loanId
-            );
-        }).toList();
+                loanId,
+                currentTaskName 
+        );
+    }).toList();
 
-        return ResponseEntity.ok(response);
+    return ResponseEntity.ok(response);
+}
+
+public ResponseEntity<ProcessInstanceDto> getProcessInstanceById(String processInstanceId) {
+    ProcessInstance instance = runtimeService.createProcessInstanceQuery()
+            .processInstanceId(processInstanceId)
+            .active()
+            .singleResult();
+
+    if (instance == null) {
+        return ResponseEntity.notFound().build();
     }
+
+    List<Task> activeTasks = taskService.createTaskQuery()
+            .processInstanceId(processInstanceId)
+            .active()
+            .list();
+
+    String currentTaskName = activeTasks.isEmpty()
+            ? "System Processing"
+            : activeTasks.stream()
+                    .map(Task::getName)
+                    .collect(Collectors.joining(", "));
+
+    Object rawLoanId = runtimeService.getVariable(processInstanceId, "loan_id");
+    if (rawLoanId == null) {
+        rawLoanId = runtimeService.getVariable(processInstanceId, "loanId");
+    }
+    Long loanId = (rawLoanId instanceof Number n) ? n.longValue() : null;
+
+    ProcessInstanceDto dto = new ProcessInstanceDto(
+            instance.getId(),
+            instance.getProcessDefinitionKey(),
+            instance.getStartTime(),
+            loanId,
+            currentTaskName
+    );
+
+    return ResponseEntity.ok(dto);
+}
 
     // Fetch historic (inactive) process instances
     public ResponseEntity<List<HistoricProcessInstanceDto>> getInactiveInstances() {
