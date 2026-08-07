@@ -73,6 +73,7 @@ import { UserStatus } from '../../../../core/models/user-status.enum';
           <table class="admin-users-table">
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
@@ -82,6 +83,7 @@ import { UserStatus } from '../../../../core/models/user-status.enum';
             <tbody>
               @for (user of users().content; track user.id) {
                 <tr>
+                  <td>{{ user.id }}</td>
                   <td>
                     <div class="admin-users-name">{{ user.name }} {{ user.surname }}</div>
                   </td>
