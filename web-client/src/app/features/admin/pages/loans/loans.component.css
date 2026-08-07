@@ -393,3 +393,133 @@
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
+
+.admin-loans-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-loans-details-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.admin-loans-details-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0284c7;
+}
+
+.admin-loans-details-dialog {
+  max-width: 680px;
+}
+
+.admin-loans-details-content {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.admin-loans-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-loans-section-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 0.4rem;
+}
+
+.admin-loans-client-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  padding: 1rem;
+}
+
+.admin-loans-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.85rem 1.1rem;
+}
+
+.admin-loans-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-loans-detail-item .label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.admin-loans-detail-item .value {
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.admin-loans-detail-item .value.highlight {
+  font-weight: 800;
+  color: #1d4ed8;
+  font-size: 1rem;
+}
+
+.admin-loans-detail-item .value.font-bold {
+  font-weight: 700;
+}
+
+.admin-loans-detail-item .value.font-mono {
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.admin-loans-detail-item .value.color-teal {
+  color: #0f766e;
+}
+
+.admin-loans-rejection-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-loans-rejection-box .rejection-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #991b1b;
+}
+
+.admin-loans-rejection-box .rejection-text {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #7f1d1d;
+}

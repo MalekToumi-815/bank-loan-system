@@ -83,13 +83,22 @@ import { UserResponse } from '../../../auth/models/auth.model';
                     </span>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="admin-loans-assignees-btn"
-                      (click)="openAssignees(loan)"
-                    >
-                      Assignees
-                    </button>
+                    <div class="admin-loans-actions">
+                      <button
+                        type="button"
+                        class="admin-loans-details-btn"
+                        (click)="openDetails(loan)"
+                      >
+                        Details
+                      </button>
+                      <button
+                        type="button"
+                        class="admin-loans-assignees-btn"
+                        (click)="openAssignees(loan)"
+                      >
+                        Assignees
+                      </button>
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -126,6 +135,121 @@ import { UserResponse } from '../../../auth/models/auth.model';
         </div>
       }
     </section>
+
+    @if (selectedLoanForDetails()) {
+      <div class="admin-loans-dialog-backdrop" (click)="closeDetailsModal()">
+        <div class="admin-loans-dialog admin-loans-details-dialog" (click)="$event.stopPropagation()">
+          <div class="admin-loans-dialog-header">
+            <div>
+              <p class="admin-loans-dialog-kicker">Loan #{{ selectedLoanForDetails()?.id }}</p>
+              <h2>Loan & Client Details</h2>
+            </div>
+            <button type="button" class="admin-loans-dialog-close" (click)="closeDetailsModal()">×</button>
+          </div>
+
+          <div class="admin-loans-details-content">
+            <!-- Client Information -->
+            <div class="admin-loans-section">
+              <h3 class="admin-loans-section-title">Client Information</h3>
+              @if (detailsLoading()) {
+                <div class="admin-loans-state">Loading client information...</div>
+              }
+              @if (detailsError()) {
+                <div class="admin-loans-state admin-loans-error">{{ detailsError() }}</div>
+              }
+              @if (!detailsLoading() && clientInfo()) {
+                <div class="admin-loans-client-card">
+                  <div class="admin-loans-detail-grid">
+                    <div class="admin-loans-detail-item">
+                      <span class="label">Client ID</span>
+                      <span class="value font-mono">#{{ clientInfo()?.id }}</span>
+                    </div>
+                    <div class="admin-loans-detail-item">
+                      <span class="label">Full Name</span>
+                      <span class="value font-bold">{{ clientInfo()?.name }} {{ clientInfo()?.surname }}</span>
+                    </div>
+                    <div class="admin-loans-detail-item">
+                      <span class="label">Email Address</span>
+                      <span class="value">{{ clientInfo()?.email }}</span>
+                    </div>
+                    <div class="admin-loans-detail-item">
+                      <span class="label">CIN</span>
+                      <span class="value">{{ clientInfo()?.cin || '—' }}</span>
+                    </div>
+                    <div class="admin-loans-detail-item">
+                      <span class="label">Phone</span>
+                      <span class="value">{{ clientInfo()?.phone || '—' }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+              @if (!detailsLoading() && !clientInfo() && !detailsError()) {
+                <div class="admin-loans-state">No client information available (Client ID: {{ selectedLoanForDetails()?.clientId ?? 'N/A' }}).</div>
+              }
+            </div>
+
+            <!-- Additional Loan Details -->
+            <div class="admin-loans-section">
+              <h3 class="admin-loans-section-title">Loan Specifications</h3>
+              <div class="admin-loans-detail-grid">
+                <div class="admin-loans-detail-item">
+                  <span class="label">Loan Type</span>
+                  <span class="value font-bold">{{ loanTypeLabel(selectedLoanForDetails()?.type ?? null) }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Requested Amount</span>
+                  <span class="value highlight">{{ formatAmount(selectedLoanForDetails()?.amount ?? null) }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Duration</span>
+                  <span class="value">{{ selectedLoanForDetails()?.durationMonths ? selectedLoanForDetails()?.durationMonths + ' months' : '—' }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Interest Rate</span>
+                  <span class="value">{{ selectedLoanForDetails()?.interestRate != null ? selectedLoanForDetails()?.interestRate + '%' : '—' }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Submission Date</span>
+                  <span class="value">{{ formatDate(selectedLoanForDetails()?.submissionDate ?? null) }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Start Date</span>
+                  <span class="value">{{ formatDate(selectedLoanForDetails()?.startDate ?? null) }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Status</span>
+                  <span class="admin-loans-status-badge" [ngClass]="getStatusBadgeClass(selectedLoanForDetails()?.status ?? null)">
+                    {{ statusLabel(selectedLoanForDetails()?.status ?? null) }}
+                  </span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Workflow Task</span>
+                  <span class="value font-medium color-teal">{{ getWorkflowTaskDisplay(selectedLoanForDetails()!) }}</span>
+                </div>
+                <div class="admin-loans-detail-item">
+                  <span class="label">Final Decision</span>
+                  <span class="value">{{ selectedLoanForDetails()?.finalDecision || '—' }}</span>
+                </div>
+              </div>
+
+              @if (selectedLoanForDetails()?.AdminrejectionReason) {
+                <div class="admin-loans-rejection-box">
+                  <span class="rejection-title">Admin Rejection Reason</span>
+                  <p class="rejection-text">{{ selectedLoanForDetails()?.AdminrejectionReason }}</p>
+                </div>
+              }
+
+              @if (selectedLoanForDetails()?.OfficerrejectionReason) {
+                <div class="admin-loans-rejection-box">
+                  <span class="rejection-title">Officer Rejection Reason</span>
+                  <p class="rejection-text">{{ selectedLoanForDetails()?.OfficerrejectionReason }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
 
     @if (selectedLoanForAssignees()) {
       <div class="admin-loans-dialog-backdrop" (click)="closeAssigneesModal()">
@@ -193,6 +317,11 @@ export class AdminLoansComponent {
   assigneesLoading = signal(false);
   assigneesError = signal<string | null>(null);
 
+  selectedLoanForDetails = signal<ClientLoan | null>(null);
+  clientInfo = signal<UserResponse | null>(null);
+  detailsLoading = signal(false);
+  detailsError = signal<string | null>(null);
+
   constructor() {
     this.loadLoans();
   }
@@ -211,6 +340,38 @@ export class AdminLoansComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  openDetails(loan: ClientLoan) {
+    this.selectedLoanForDetails.set(loan);
+    this.detailsLoading.set(true);
+    this.detailsError.set(null);
+    this.clientInfo.set(null);
+
+    if (loan.clientId == null) {
+      this.detailsLoading.set(false);
+      return;
+    }
+
+    this.loanService.getAssignees([loan.clientId]).subscribe({
+      next: users => {
+        if (users && users.length > 0) {
+          this.clientInfo.set(users[0]);
+        }
+        this.detailsLoading.set(false);
+      },
+      error: () => {
+        this.detailsError.set('Unable to fetch client details.');
+        this.detailsLoading.set(false);
+      }
+    });
+  }
+
+  closeDetailsModal() {
+    this.selectedLoanForDetails.set(null);
+    this.clientInfo.set(null);
+    this.detailsError.set(null);
+    this.detailsLoading.set(false);
   }
 
   openAssignees(loan: ClientLoan) {
@@ -306,6 +467,13 @@ export class AdminLoansComponent {
       month: 'short',
       day: 'numeric'
     });
+  }
+
+  formatAmount(value: number | null): string {
+    if (value == null || value === 0) {
+      return '—';
+    }
+    return `${value.toLocaleString()} DT`;
   }
 
   getStatusBadgeClass(status: string | null): string {
