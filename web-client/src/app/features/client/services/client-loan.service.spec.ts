@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { ClientLoanService } from './client-loan.service';
+import { ClientLoanService, PaginatedLoansResponse } from './client-loan.service';
 
 describe('ClientLoanService', () => {
   let service: ClientLoanService;
@@ -33,13 +33,28 @@ describe('ClientLoanService', () => {
       }
     ];
 
+    const mockPaginatedResponse: PaginatedLoansResponse = {
+      content: loans as any,
+      pageable: { pageNumber: 0, pageSize: 10, offset: 0, paged: true, unpaged: false },
+      last: true,
+      totalPages: 1,
+      totalElements: 1,
+      size: 10,
+      number: 0,
+      first: true,
+      numberOfElements: 1,
+      empty: false
+    };
+
     service.getClientLoans(2).subscribe(response => {
-      expect(response).toHaveLength(1);
-      expect(response[0].id).toBe(8);
+      expect(response.content).toHaveLength(1);
+      expect(response.content[0].id).toBe(8);
     });
 
-    const req = httpMock.expectOne('http://localhost:8083/credit/loans?clientId=2');
+    const req = httpMock.expectOne(req => req.url === 'http://localhost:8083/credit/loans' && req.params.get('clientId') === '2');
     expect(req.request.method).toBe('GET');
-    req.flush(loans);
+    expect(req.request.params.get('page')).toBe('0');
+    expect(req.request.params.get('size')).toBe('10');
+    req.flush(mockPaginatedResponse);
   });
 });

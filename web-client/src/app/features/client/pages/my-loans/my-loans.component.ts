@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ClientLoan } from '../../models/client-loan.model';
-import { ClientLoanService } from '../../services/client-loan.service';
+import { ClientLoanService, PaginatedLoansResponse } from '../../services/client-loan.service';
 import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-details-dialog/loan-details-dialog.component';
 
 @Component({
@@ -52,7 +52,7 @@ import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-d
         </div>
       </div>
 
-      @if (!loading() && loans().length === 0) {
+      @if (!loading() && loans().content.length === 0) {
         <div class="my-loans-empty">
           No loan requests have been submitted yet.
         </div>
@@ -91,9 +91,31 @@ import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-d
             </tbody>
           </table>
         </div>
+
+        <div class="my-loans-pagination">
+          <button
+            type="button"
+            class="my-loans-page-btn"
+            [disabled]="page() === 0"
+            (click)="previousPage()"
+          >
+            Previous
+          </button>
+          <span class="my-loans-page-info">
+            Page {{ page() + 1 }} of {{ loans().totalPages || 1 }} ({{ loans().totalElements || 0 }} total)
+          </span>
+          <button
+            type="button"
+            class="my-loans-page-btn"
+            [disabled]="page() + 1 >= (loans().totalPages || 1)"
+            (click)="nextPage()"
+          >
+            Next
+          </button>
+        </div>
       }
 
-      @if (!loading() && loans().length > 0 && filteredLoans().length === 0) {
+      @if (!loading() && loans().content.length > 0 && filteredLoans().length === 0) {
         <div class="my-loans-empty">
           No matching loan requests were found.
         </div>
@@ -114,13 +136,26 @@ export class MyLoansComponent {
   private authService = inject(AuthService);
 
   currentUser = toSignal(this.authService.currentUser$, { initialValue: null });
-  loans = signal<ClientLoan[]>([]);
+  loans = signal<PaginatedLoansResponse>({
+    content: [],
+    pageable: { pageNumber: 0, pageSize: 10, offset: 0, paged: true, unpaged: false },
+    last: true,
+    totalPages: 1,
+    totalElements: 0,
+    size: 10,
+    number: 0,
+    first: true,
+    numberOfElements: 0,
+    empty: true
+  });
   loading = signal(false);
   error = signal<string | null>(null);
   selectedFilter = signal<'All' | 'Submitted' | 'Under review' | 'Approved' | 'Rejected'>('All');
   searchTerm = signal('');
   detailsOpen = signal(false);
   selectedLoan = signal<ClientLoan | null>(null);
+  page = signal(0);
+  pageSize = signal(10);
 
   readonly currentClientId = computed(() => this.currentUser()?.id ?? null);
 
@@ -128,7 +163,7 @@ export class MyLoansComponent {
     const term = this.searchTerm().trim().toLowerCase();
     const filter = this.selectedFilter();
 
-    return this.loans().filter(loan => {
+    return (this.loans().content || []).filter(loan => {
       const type = this.loanTypeLabel(loan.type).toLowerCase();
       const id = this.loanLabel(loan).toLowerCase();
       const matchesSearch = !term || id.includes(term) || type.includes(term);
@@ -146,9 +181,29 @@ export class MyLoansComponent {
     effect(() => {
       const clientId = this.currentClientId();
       if (clientId != null) {
-        this.loadLoans(clientId);
+        this.loadLoans(clientId, this.page());
       }
     });
+  }
+
+  nextPage() {
+    if (this.page() + 1 < (this.loans().totalPages || 1)) {
+      this.page.update(p => p + 1);
+      const clientId = this.currentClientId();
+      if (clientId != null) {
+        this.loadLoans(clientId, this.page());
+      }
+    }
+  }
+
+  previousPage() {
+    if (this.page() > 0) {
+      this.page.update(p => p - 1);
+      const clientId = this.currentClientId();
+      if (clientId != null) {
+        this.loadLoans(clientId, this.page());
+      }
+    }
   }
 
   openLoanDialog(loan: ClientLoan) {
@@ -220,11 +275,11 @@ export class MyLoansComponent {
     return (loan.status?.toUpperCase() ?? '') === 'REJECTED';
   }
 
-  private loadLoans(clientId: number) {
+  private loadLoans(clientId: number, page: number = 0) {
     this.loading.set(true);
     this.error.set(null);
 
-    this.loanService.getClientLoans(clientId).subscribe({
+    this.loanService.getClientLoans(clientId, page, this.pageSize()).subscribe({
       next: response => {
         this.loans.set(response);
       },
