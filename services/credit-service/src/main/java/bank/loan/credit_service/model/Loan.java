@@ -19,8 +19,6 @@ public class Loan {
     private Date submissionDate;
     private Date startDate;
 
-
-
     private float amount;
 
     @Enumerated(EnumType.STRING)
@@ -37,12 +35,13 @@ public class Loan {
     private String OfficerrejectionReason;
     private String AdminrejectionReason;
 
-    private String workflowProcessInstanceId; // links to Flowable's running instance 
+    private String workflowProcessInstanceId; // links to Flowable's running instance
+    private String workflowTask;
 
-    @OneToOne(mappedBy = "loan",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Ammortisation ammortisation;
 
-    @OneToOne(mappedBy = "loan",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private RiskAssessment riskAssessment;
 
     public Loan(float amount, LoanType type, int durationMonths) {
@@ -194,5 +193,13 @@ public class Loan {
 
     public void setAdminrejectionReason(String adminrejectionReason) {
         AdminrejectionReason = adminrejectionReason;
+    }
+
+    public String getWorkflowTask() {
+        return workflowTask;
+    }
+
+    public void setWorkflowTask(String workflowTask) {
+        this.workflowTask = workflowTask;
     }
 }
