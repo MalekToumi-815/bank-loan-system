@@ -7,6 +7,9 @@ import java.util.Optional;
 
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,20 +50,26 @@ public class UserService {
 		}
 	}
 
-public List<UserResponse> getAllUsers(Role role, Status status) {
-    List<User> users;
+public Page<UserResponse> getAllUsers(Role role, Status status, String search, Integer page, Integer size) {
+    int pageNumber = (page != null && page >= 0) ? page : 0;
+    int pageSize = (size != null && size > 0) ? size : 20;
+    Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-    if (role != null && status != null) {
-        users = userRepository.findByRoleAndStatus(role, status);
+    Page<User> usersPage;
+
+    if (role != null && status != null && search != null && !search.isBlank()) {
+        usersPage = userRepository.findByRoleAndStatusAndSearchPrefix(role, status, search, pageable);
+    } else if (role != null && status != null) {
+        usersPage = userRepository.findByRoleAndStatus(role, status, pageable);
     } else if (role != null) {
-        users = userRepository.findByRole(role);
+        usersPage = userRepository.findByRole(role, pageable);
     } else if (status != null) {
-        users = userRepository.findByStatus(status);
+        usersPage = userRepository.findByStatus(status, pageable);
     } else {
-        users = userRepository.findAll();
+        usersPage = userRepository.findAll(pageable);
     }
 
-    return users.stream().map(this::toResponse).toList();
+    return usersPage.map(this::toResponse);
 }
 
 	public Optional<UserResponse> getUserById(Long id) {

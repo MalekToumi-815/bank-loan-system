@@ -1,5 +1,6 @@
 package bank.loan.account_service.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,10 +38,13 @@ public class UserController {
 
 	@PreAuthorize("hasAuthority('MANAGE-USERS') || hasRole('INTERNAL')")
 	@GetMapping
-	public java.util.List<UserResponse> getAllUsers(
+	public Page<UserResponse> getAllUsers(
 			@RequestParam(required = false) Role role,
-			@RequestParam(required = false) Status status) {
-		return userService.getAllUsers(role, status);
+			@RequestParam(required = false) Status status,
+			@RequestParam(required = false) String search,
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "20") Integer size) {
+		return userService.getAllUsers(role, status, search, page, size);
 	}
 
 	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id || hasRole('INTERNAL')")
