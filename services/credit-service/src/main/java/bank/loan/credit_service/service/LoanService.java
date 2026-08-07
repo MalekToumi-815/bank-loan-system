@@ -157,7 +157,6 @@ public class LoanService {
         if (loan == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        getWorkflowtask(loan);
         return ResponseEntity.ok(toLoanResponse(loan));
     }
 
@@ -168,7 +167,6 @@ public class LoanService {
 
         Page<Loan> loansPage = loanRepository.findAllWithFilters(clientId, status, pageable);
         return loansPage.map(loan -> {
-            getWorkflowtask(loan);
             return toLoanResponse(loan);
         });
     }
@@ -470,32 +468,18 @@ public class LoanService {
                 "message", "Rejection reason set successfully"));
     }
 
-    private void getWorkflowtask(Loan loan) {
-        if (loan == null  || loan.getWorkflowProcessInstanceId() == null) {
-            return;
+    //Set workflow task for a loan
+    public ResponseEntity<Map<String, String>> setWorkflowTask(Long loanId, String workflowTask) {
+        Loan loan = loanRepository.findById(loanId).orElse(null);
+        if (loan == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "FAILED", "message", "Loan not found"));
         }
 
-        try {
-            ProcessInstanceDto dto = restClient.get()
-                    .uri("http://workflow-service/workflow/admin/instances/{processInstanceId}",
-                            loan.getWorkflowProcessInstanceId())
-                    .header("X-Internal-Secret", internalSecret)
-                    .retrieve()
-                    .body(ProcessInstanceDto.class);
-
-            if (dto != null) {
-                loan.setWorkflowTask(dto.status());
-            }
-        } catch (Exception e) {
-            loan.setWorkflowTask(null);
-        }
-    }
-
-    private record ProcessInstanceDto(
-            String processInstanceId,
-            String processDefinitionKey,
-            Date startTime,
-            Long loanId,
-            String status) {
+        loan.setWorkflowTask(workflowTask);
+        loanRepository.save(loan);
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "message", "Workflow task set successfully"));
     }
 }

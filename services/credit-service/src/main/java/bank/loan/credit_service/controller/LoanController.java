@@ -151,4 +151,13 @@ public class LoanController {
         Role role = Role.valueOf(payload.get("role").toString());
         return loanService.setRejectionReason(id, reason, role);
     }
+
+    @PreAuthorize("hasRole('INTERNAL')")
+    @PutMapping("update-workflowTask/{id}")
+    public ResponseEntity<Map<String, String>> setWorkflowTask(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+        String workflowTask = payload.get("workflowTask");
+        return loanService.setWorkflowTask(id, workflowTask);
+    }
 }
