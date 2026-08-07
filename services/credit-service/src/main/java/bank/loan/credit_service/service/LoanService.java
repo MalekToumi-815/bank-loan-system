@@ -471,7 +471,7 @@ public class LoanService {
     }
 
     private void getWorkflowtask(Loan loan) {
-        if (loan == null || loan.getWorkflowTask() != null || loan.getWorkflowProcessInstanceId() == null) {
+        if (loan == null  || loan.getWorkflowProcessInstanceId() == null) {
             return;
         }
 
