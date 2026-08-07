@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { UserResponse } from '../../auth/models/auth.model';
+import { RegisterRequest, RegisterResponse, UserResponse } from '../../auth/models/auth.model';
 
 export interface PaginatedUsersResponse<T> {
   content: T[];
@@ -38,6 +38,10 @@ export interface UpdateUserStatusResponse {
 export class AdminUserService {
   private http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
+
+  createUser(userData: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.baseUrl}account/users`, userData);
+  }
 
   getUsers(params?: {
     role?: string;

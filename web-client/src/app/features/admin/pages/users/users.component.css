@@ -17,6 +17,19 @@
   gap: 1rem;
 }
 
+.admin-users-create-btn {
+  border: none;
+  border-radius: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: #0f766e;
+  color: #ffffff;
+  white-space: nowrap;
+  box-shadow: 0 8px 16px rgba(15, 118, 110, 0.18);
+}
+
 .admin-users-kicker {
   margin: 0;
   color: #0f172a;
@@ -265,6 +278,10 @@
   padding: 1.2rem;
 }
 
+.admin-users-create-dialog {
+  width: min(920px, 100%);
+}
+
 .admin-users-dialog-header {
   display: flex;
   align-items: flex-start;
@@ -304,6 +321,50 @@
   gap: 0.8rem;
 }
 
+.admin-users-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-users-create-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.admin-users-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-users-create-cancel,
+.admin-users-create-submit {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-users-create-cancel {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.admin-users-create-submit {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.admin-users-create-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .admin-users-dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -331,4 +392,19 @@
   color: #0f172a;
   font-size: 0.94rem;
   text-align: right;
+}
+
+@media (max-width: 900px) {
+  .admin-users-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-users-create-btn {
+    width: 100%;
+  }
+
+  .admin-users-create-grid {
+    grid-template-columns: 1fr;
+  }
 }

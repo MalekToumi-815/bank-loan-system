@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AdminUserService, PaginatedUsersResponse } from '../../services/admin-user.service';
-import { UserResponse } from '../../../auth/models/auth.model';
+import { RegisterRequest, UserResponse } from '../../../auth/models/auth.model';
+import { UserRole } from '../../../../core/models/user-role.enum';
+import { UserStatus } from '../../../../core/models/user-status.enum';
 
 @Component({
   selector: 'app-admin-users',
@@ -16,6 +19,9 @@ import { UserResponse } from '../../../auth/models/auth.model';
           <p class="admin-users-kicker">Bank Admin Desk</p>
           <h1 class="admin-users-title">User Management</h1>
         </div>
+        <button type="button" class="admin-users-create-btn" (click)="openCreateDialog()">
+          Add new employee
+        </button>
       </div>
 
       @if (loading()) {
@@ -107,6 +113,79 @@ import { UserResponse } from '../../../auth/models/auth.model';
           </button>
         </div>
       }
+
+      @if (createDialogOpen()) {
+        <div class="admin-users-dialog-backdrop" (click)="closeCreateDialog()">
+          <div class="admin-users-dialog admin-users-create-dialog" (click)="$event.stopPropagation()">
+            <div class="admin-users-dialog-header">
+              <div>
+                <p class="admin-users-dialog-kicker">Create employee</p>
+                <h2>New user account</h2>
+              </div>
+              <button type="button" class="admin-users-dialog-close" (click)="closeCreateDialog()">×</button>
+            </div>
+
+            @if (createErrorMessage()) {
+              <div class="admin-users-state admin-users-error">{{ createErrorMessage() }}</div>
+            }
+
+            <form class="admin-users-create-form" #createForm="ngForm" (ngSubmit)="createEmployee()">
+              <div class="admin-users-create-grid">
+                <label class="admin-users-filter-field">
+                  <span>First name</span>
+                  <input type="text" [(ngModel)]="createUserData.name" name="createName" placeholder="First name" required />
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>Last name</span>
+                  <input type="text" [(ngModel)]="createUserData.surname" name="createSurname" placeholder="Last name" required />
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>Email</span>
+                  <input type="email" [(ngModel)]="createUserData.email" name="createEmail" placeholder="name@example.com" required />
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>Phone</span>
+                  <input type="tel" [(ngModel)]="createUserData.phone" name="createPhone" placeholder="Phone number" required />
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>CIN</span>
+                  <input type="text" [(ngModel)]="createUserData.cin" name="createCin" placeholder="National ID" required />
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>Role</span>
+                  <select [(ngModel)]="createUserData.role" name="createRole" required>
+                    <option [ngValue]="UserRole.BANK_ADMIN">Bank Admin</option>
+                    <option [ngValue]="UserRole.BANK_RECEPTIONIST">Bank Receptionist</option>
+                    <option [ngValue]="UserRole.LOAN_OFFICER">Loan Officer</option>
+                  </select>
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>Password</span>
+                  <input type="password" [(ngModel)]="createUserData.password" name="createPassword" placeholder="Password" required />
+                </label>
+
+                <label class="admin-users-filter-field">
+                  <span>Confirm password</span>
+                  <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirm password" required />
+                </label>
+              </div>
+
+              <div class="admin-users-create-actions">
+                <button type="button" class="admin-users-create-cancel" (click)="closeCreateDialog()">Cancel</button>
+                <button type="submit" class="admin-users-create-submit" [disabled]="creatingUser() || createForm.invalid">
+                  {{ creatingUser() ? 'Creating...' : 'Create employee' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
     </section>
 
     @if (selectedUser()) {
@@ -160,6 +239,8 @@ import { UserResponse } from '../../../auth/models/auth.model';
 export class AdminUsersComponent {
   private adminUserService = inject(AdminUserService);
 
+  readonly UserRole = UserRole;
+
   readonly users = signal<PaginatedUsersResponse<UserResponse>>({
     content: [],
     pageable: {
@@ -183,9 +264,23 @@ export class AdminUsersComponent {
   readonly error = signal<string | null>(null);
   readonly selectedUser = signal<UserResponse | null>(null);
   readonly updatingStatus = signal(false);
+  readonly creatingUser = signal(false);
+  readonly createDialogOpen = signal(false);
+  readonly createErrorMessage = signal('');
   selectedRole = '';
   selectedStatus = '';
   searchTerm = '';
+  confirmPassword = '';
+  createUserData: RegisterRequest = {
+    name: '',
+    surname: '',
+    email: '',
+    cin: '',
+    phone: '',
+    password: '',
+    role: UserRole.BANK_RECEPTIONIST,
+    status: UserStatus.ACTIVE
+  };
 
   constructor() {
     this.loadUsers();
@@ -268,6 +363,76 @@ export class AdminUsersComponent {
         console.error(`Failed to update user ${user.id} status`, error);
         this.updatingStatus.set(false);
         this.error.set('Unable to update user status.');
+      }
+    });
+  }
+
+  openCreateDialog(): void {
+    this.createErrorMessage.set('');
+    this.confirmPassword = '';
+    this.createUserData = {
+      name: '',
+      surname: '',
+      email: '',
+      cin: '',
+      phone: '',
+      password: '',
+      role: UserRole.BANK_RECEPTIONIST,
+      status: UserStatus.ACTIVE
+    };
+    this.createDialogOpen.set(true);
+    console.log('Opened create employee dialog');
+  }
+
+  closeCreateDialog(): void {
+    this.createDialogOpen.set(false);
+    this.createErrorMessage.set('');
+    this.confirmPassword = '';
+    console.log('Closed create employee dialog');
+  }
+
+  createEmployee(): void {
+    this.createErrorMessage.set('');
+
+    const trimmedName = this.createUserData.name.trim();
+    const trimmedSurname = this.createUserData.surname.trim();
+    const trimmedEmail = this.createUserData.email.trim();
+    const trimmedPhone = this.createUserData.phone.trim();
+    const trimmedCin = this.createUserData.cin.trim();
+    const trimmedPassword = this.createUserData.password?.trim() || '';
+
+    if (!trimmedName || !trimmedSurname || !trimmedEmail || !trimmedPhone || !trimmedCin || !trimmedPassword || !this.createUserData.role) {
+      this.createErrorMessage.set('Please fill in all required fields.');
+      return;
+    }
+
+    if (this.createUserData.password !== this.confirmPassword) {
+      this.createErrorMessage.set('Passwords do not match.');
+      return;
+    }
+
+    this.creatingUser.set(true);
+    console.log('Creating employee user with role:', this.createUserData.role);
+
+    this.adminUserService.createUser(this.createUserData).subscribe({
+      next: (response) => {
+        console.log('Employee created successfully:', response.message);
+        this.creatingUser.set(false);
+        this.closeCreateDialog();
+        this.page.set(0);
+        this.loadUsers();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Failed to create employee user', error);
+        this.creatingUser.set(false);
+
+        if (error.error?.message) {
+          this.createErrorMessage.set(error.error.message);
+        } else if (error.status === 409) {
+          this.createErrorMessage.set('This email is already registered.');
+        } else {
+          this.createErrorMessage.set('Employee creation failed. Please try again.');
+        }
       }
     });
   }
