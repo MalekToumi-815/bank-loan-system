@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -121,17 +124,25 @@ public class LoanService {
     }
 
     // Methods for controller to call
-    public ResponseEntity<Map<String, Object>> createLoanResponse(LoanRequest loanrequest, Long clientId) {
+    public ResponseEntity<Map<String, Object>> createLoanResponse(LoanRequest loanRequest, Long clientId) {
+        if (clientId == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "FAILED", "message", "Client ID is required"));
+        }
+
+        if (!isUserEligibleForLoan(clientId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("status", "FAILED", "message", "User is not eligible to create a loan"));
+        }
+
+        Loan loan = new Loan(
+                loanRequest.amount(),
+                loanRequest.type(),
+                loanRequest.durationMonths());
+        loan.setClientId(clientId);
+        loan.setStatus(LoanStatus.SUBMITTED);
+
         try {
-            if (!isUserEligibleForLoan(clientId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("status", "FAILED", "message", "User does not exist"));
-            }
-            Loan loan = new Loan(
-                    loanrequest.amount(),
-                    loanrequest.type(),
-                    loanrequest.durationMonths());
-            loan.setClientId(clientId);
             loanRepository.save(loan);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("status", "SUCCESS", "message", "Loan submitted", "loanId", loan.getId()));
@@ -150,12 +161,16 @@ public class LoanService {
         return ResponseEntity.ok(toLoanResponse(loan));
     }
 
-    public ResponseEntity<List<LoanResponse>> getAllLoansResponse(Long userId) {
-        List<LoanResponse> loans = getAllLoans(userId).stream()
-                .peek(this::getWorkflowtask)
-                .map(this::toLoanResponse)
-                .toList();
-        return ResponseEntity.ok(loans);
+    public Page<LoanResponse> getAllLoansResponse(Long clientId, LoanStatus status, Integer page, Integer size) {
+        int pageNumber = (page != null && page >= 0) ? page : 0;
+        int pageSize = (size != null && size > 0) ? size : 10;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        Page<Loan> loansPage = loanRepository.findAllWithFilters(clientId, status, pageable);
+        return loansPage.map(loan -> {
+            getWorkflowtask(loan);
+            return toLoanResponse(loan);
+        });
     }
 
     public ResponseEntity<Map<String, String>> deleteLoanResponse(Long id) {

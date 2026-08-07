@@ -3,6 +3,7 @@ package bank.loan.credit_service.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,8 +51,12 @@ public class LoanController {
 
     @PreAuthorize("hasRole('INTERNAL') || hasAuthority('MANAGE-LOANS') || hasAuthority('VIEW-LOAN')")
     @GetMapping
-    public ResponseEntity<List<LoanResponse>> getAllLoans(@RequestParam(required = false) Long clientId) {
-        return loanService.getAllLoansResponse(clientId);
+    public Page<LoanResponse> getAllLoans(
+            @RequestParam(required = false) Long clientId,
+            @RequestParam(required = false) LoanStatus status,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        return loanService.getAllLoansResponse(clientId, status, page, size);
     }
 
     @PreAuthorize("hasRole('INTERNAL') || hasAuthority('MANAGE-LOANS')")
@@ -93,6 +98,7 @@ public class LoanController {
             @RequestBody AdminTask task) {
         return loanService.updateAdminTaskResponse(id, task);
     }
+
     @PreAuthorize("hasRole('INTERNAL')")
     @PostMapping("/{id}/risk")
     public ResponseEntity<Map<String, Object>> createRiskAssessment(
