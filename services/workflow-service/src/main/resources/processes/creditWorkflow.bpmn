@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:design="http://flowable.org/design" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://flowable.org/test" exporter="Flowable Design" exporterVersion="2025.2.04" design:palette="flowable-work-process-palette">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:design="http://flowable.org/design" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://flowable.org/test" exporter="Flowable Design" exporterVersion="2026.1.1" design:palette="flowable-work-process-palette">
   <process id="creditWorkflow" name="credit workflow" isExecutable="true" flowable:candidateStarterGroups="flowableUser">
     <extensionElements>
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-07-11T18:08:24.336Z]]></design:creationdate>
-      <design:modificationdate><![CDATA[2026-07-22T00:45:08.041Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-08-07T22:35:01.891Z]]></design:modificationdate>
     </extensionElements>
     <userTask id="officer_validation" name="Loan officer validates bank receptionist request" flowable:assignee="${loan_officer_id}" flowable:formFieldValidation="false">
       <extensionElements>
+        <flowable:taskListener event="create" delegateExpression="${updateLoanStepListener}"></flowable:taskListener>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -21,6 +22,7 @@
     </serviceTask>
     <userTask id="receptionist_create_loan" name="Bank receptionist create loan request" flowable:assignee="${receptionist_id}" flowable:formFieldValidation="false">
       <extensionElements>
+        <flowable:taskListener event="create" delegateExpression="${updateLoanStepListener}"></flowable:taskListener>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -46,6 +48,7 @@
     </serviceTask>
     <userTask id="admin_approval" name="Bank admin validation" flowable:assignee="${bank_admin_id}" flowable:formFieldValidation="false">
       <extensionElements>
+        <flowable:taskListener event="create" delegateExpression="${updateLoanStepListener}"></flowable:taskListener>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -59,6 +62,7 @@
     </serviceTask>
     <userTask id="officer_recommendation" name="Loan officer writes recommendation" flowable:assignee="${loan_officer_id}" flowable:formFieldValidation="false">
       <extensionElements>
+        <flowable:taskListener event="create" delegateExpression="${updateLoanStepListener}"></flowable:taskListener>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -66,6 +70,7 @@
     </userTask>
     <userTask id="admin_decision" name="Bank admin fills credit and final decision fields" flowable:assignee="${bank_admin_id}" flowable:formFieldValidation="false">
       <extensionElements>
+        <flowable:taskListener event="create" delegateExpression="${updateLoanStepListener}"></flowable:taskListener>
         <flowable:task-candidates-type><![CDATA[all]]></flowable:task-candidates-type>
         <design:stencilid><![CDATA[FormTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -122,12 +127,14 @@
     </startEvent>
     <endEvent id="EndNoneEvent_39" name="Credit accepted ending">
       <extensionElements>
+        <flowable:executionListener event="end" delegateExpression="${clearLoanStepListener}"></flowable:executionListener>
         <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
     </endEvent>
     <endEvent id="EndNoneEvent_41" name="Credit rejected ending">
       <extensionElements>
+        <flowable:executionListener event="end" delegateExpression="${clearLoanStepListener}"></flowable:executionListener>
         <design:stencilid><![CDATA[EndNoneEvent]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>

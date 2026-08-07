@@ -2,6 +2,7 @@ package bank.loan.workflow_service.service;
 
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import bank.loan.workflow_service.dto.HistoricProcessInstanceDto;
 import bank.loan.workflow_service.dto.LoanRequest;
 import bank.loan.workflow_service.dto.ProcessInstanceDto;
 import bank.loan.workflow_service.dto.ReceptionistTask;
+import bank.loan.workflow_service.dto.PageResponse;
 import bank.loan.workflow_service.model.LoanStatus;
 import bank.loan.workflow_service.model.Role;
 import bank.loan.workflow_service.model.TaskKeys;
@@ -328,17 +330,21 @@ public class WorkflowService {
         throw new IllegalArgumentException(variableName + " is required");
     }
 
-    //Fetching Active Users with a certain Role
     public List<UserResponse> fetchUsers(Role role) {
-        return accountClient.get()
+        PageResponse<UserResponse> pageResponse = accountClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users")
                         .queryParam("role", role)
                         .queryParam("status", "ACTIVE")
+                        .queryParam("size", 1000) // Ensure enough users are returned per page
                         .build())
                 .headers(headers -> headers.set("X-Internal-Secret", internalSecret))
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<UserResponse>>() {});
+                .body(new ParameterizedTypeReference<PageResponse<UserResponse>>() {});
+
+        return (pageResponse != null && pageResponse.content() != null) 
+                ? pageResponse.content() 
+                : Collections.emptyList();
     }
 
     // Fetch a single user by ID
@@ -528,6 +534,20 @@ public ResponseEntity<ProcessInstanceDto> getProcessInstanceById(String processI
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Rejection reason updated successfully for loan ID: " + loanId);
+        return ResponseEntity.ok(response);
+    }
+
+    //internal methode to update workflow step for a specific loan
+    public ResponseEntity<Map<String, String>> updateWorkflowStep(Long loanId, String workflowTask) {
+        creditClient.put()
+                .uri("/loans/update-workflowTask/{id}", loanId)
+                .header("X-Internal-Secret", internalSecret)
+                .body(Map.of("workflowTask", workflowTask))
+                .retrieve()
+                .toBodilessEntity();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Workflow step updated successfully for loan ID: " + loanId);
         return ResponseEntity.ok(response);
     }
 }
