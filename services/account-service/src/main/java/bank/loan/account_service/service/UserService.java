@@ -55,21 +55,11 @@ public Page<UserResponse> getAllUsers(Role role, Status status, String search, I
     int pageSize = (size != null && size > 0) ? size : 20;
     Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-    Page<User> usersPage;
+    // Sanitize blank strings to null so the JPQL null check works as expected
+    String searchParam = (search != null && !search.isBlank()) ? search.trim() : null;
 
-    if (role != null && status != null && search != null && !search.isBlank()) {
-        usersPage = userRepository.findByRoleAndStatusAndSearchPrefix(role, status, search, pageable);
-    } else if (role != null && status != null) {
-        usersPage = userRepository.findByRoleAndStatus(role, status, pageable);
-    } else if (role != null) {
-        usersPage = userRepository.findByRole(role, pageable);
-    } else if (status != null) {
-        usersPage = userRepository.findByStatus(status, pageable);
-    } else {
-        usersPage = userRepository.findAll(pageable);
-    }
-
-    return usersPage.map(this::toResponse);
+    return userRepository.findUsersWithFilters(role, status, searchParam, pageable)
+            .map(this::toResponse);
 }
 
 	public Optional<UserResponse> getUserById(Long id) {

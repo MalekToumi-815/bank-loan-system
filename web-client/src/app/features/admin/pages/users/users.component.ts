@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AdminUserService, PaginatedUsersResponse } from '../../services/admin-user.service';
 import { UserResponse } from '../../../auth/models/auth.model';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   styleUrl: './users.component.css',
   template: `
     <section class="admin-users-page">
@@ -26,6 +27,42 @@ import { UserResponse } from '../../../auth/models/auth.model';
       }
 
       @if (!loading() && !error()) {
+        <div class="admin-users-filters">
+          <label class="admin-users-filter-field admin-users-filter-field-wide">
+            <span>Search</span>
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              placeholder="Search by id, name, surname or email"
+            />
+            <small>Searches id, name, surname, and email</small>
+          </label>
+
+          <label class="admin-users-filter-field">
+            <span>Role</span>
+            <select [(ngModel)]="selectedRole" (change)="applyFilters()">
+              <option value="">All roles</option>
+              <option value="CLIENT">Client</option>
+              <option value="BANK_ADMIN">Bank Admin</option>
+              <option value="BANK_RECEPTIONIST">Bank Receptionist</option>
+              <option value="LOAN_OFFICER">Loan Officer</option>
+            </select>
+          </label>
+
+          <label class="admin-users-filter-field">
+            <span>Status</span>
+            <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+              <option value="">All statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </label>
+
+          <button type="button" class="admin-users-search-btn" (click)="applyFilters()">
+            Search
+          </button>
+        </div>
+
         <div class="admin-users-table-wrap">
           <table class="admin-users-table">
             <thead>
@@ -146,16 +183,28 @@ export class AdminUsersComponent {
   readonly error = signal<string | null>(null);
   readonly selectedUser = signal<UserResponse | null>(null);
   readonly updatingStatus = signal(false);
+  selectedRole = '';
+  selectedStatus = '';
+  searchTerm = '';
 
   constructor() {
     this.loadUsers();
   }
 
-  loadUsers(): void {
+  loadUsers(params?: { search?: string }): void {
+    const requestParams = {
+      page: this.page(),
+      size: 10,
+      role: this.selectedRole || undefined,
+      status: this.selectedStatus || undefined,
+      search: params?.search ?? (this.searchTerm || undefined)
+    };
+
+    console.log('Loading users with params:', requestParams);
     this.loading.set(true);
     this.error.set(null);
 
-    this.adminUserService.getUsers({ page: this.page(), size: 10 }).subscribe({
+    this.adminUserService.getUsers(requestParams).subscribe({
       next: (response) => {
         this.users.set(response);
         this.loading.set(false);
@@ -165,6 +214,11 @@ export class AdminUsersComponent {
         this.error.set('Unable to load users right now.');
       }
     });
+  }
+
+  applyFilters(): void {
+    this.page.set(0);
+    this.loadUsers({ search: this.searchTerm });
   }
 
   previousPage(): void {
@@ -196,10 +250,12 @@ export class AdminUsersComponent {
     }
 
     const nextStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    console.log(`Updating user ${user.id} status to ${nextStatus}`);
     this.updatingStatus.set(true);
 
     this.adminUserService.updateUserStatus(user.id, nextStatus, user.id).subscribe({
       next: () => {
+        console.log(`User ${user.id} status updated to ${nextStatus}`);
         const updatedUser = { ...user, status: nextStatus };
         this.selectedUser.set(updatedUser);
         this.users.update((current) => ({
@@ -208,7 +264,8 @@ export class AdminUsersComponent {
         }));
         this.updatingStatus.set(false);
       },
-      error: () => {
+      error: (error) => {
+        console.error(`Failed to update user ${user.id} status`, error);
         this.updatingStatus.set(false);
         this.error.set('Unable to update user status.');
       }

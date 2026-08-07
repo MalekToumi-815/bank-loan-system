@@ -33,6 +33,99 @@
   color: #0f172a;
 }
 
+.admin-users-filters {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.7fr) minmax(180px, 0.9fr) minmax(180px, 0.9fr) auto;
+  align-items: start;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid #d7dce3;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+}
+
+.admin-users-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.admin-users-filter-field-wide {
+  min-width: 0;
+}
+
+.admin-users-search-btn {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: #1d4ed8;
+  color: #ffffff;
+  height: 44px;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.admin-users-filter-field span {
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-users-filter-field input,
+.admin-users-filter-field select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  align-self: center;
+}
+
+.admin-users-filter-field small {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.admin-users-filter-field input:focus,
+.admin-users-filter-field select:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+@media (max-width: 1100px) {
+  .admin-users-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-users-filter-field-wide {
+    grid-column: 1 / -1;
+  }
+
+  .admin-users-search-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-users-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-users-search-btn {
+    width: 100%;
+  }
+}
+
 .admin-users-table-wrap {
   border: 1px solid #d7dce3;
   border-radius: 1rem;
@@ -81,8 +174,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: #f1f5f9;
-  color: #334155;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .admin-users-status.active {

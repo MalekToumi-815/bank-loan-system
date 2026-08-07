@@ -21,20 +21,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByRole(Role role, Pageable pageable);
     Page<User> findByStatus(Status status, Pageable pageable);
 
-    @Query("""
-        select u from User u
-        where u.role = :role
-            and u.status = :status
-            and (
-                lower(u.name) like lower(concat(:search, '%'))
-            or lower(u.surname) like lower(concat(:search, '%'))
-            or lower(u.email) like lower(concat(:search, '%'))
-            or cast(u.id as string) like concat(:search, '%')
-            )
-        """)
-    Page<User> findByRoleAndStatusAndSearchPrefix(
-            @Param("role") Role role,
-            @Param("status") Status status,
-            @Param("search") String search,
-            Pageable pageable);
+   @Query("""
+    select u from User u
+    where (:role is null or u.role = :role)
+      and (:status is null or u.status = :status)
+      and (
+          :search is null or :search = '' or (
+              lower(u.name) like lower(concat(:search, '%'))
+           or lower(u.surname) like lower(concat(:search, '%'))
+           or lower(u.email) like lower(concat(:search, '%'))
+           or cast(u.id as string) like concat(:search, '%')
+          )
+      )
+    """)
+Page<User> findUsersWithFilters(
+        @Param("role") Role role,
+        @Param("status") Status status,
+        @Param("search") String search,
+        Pageable pageable);
 }
