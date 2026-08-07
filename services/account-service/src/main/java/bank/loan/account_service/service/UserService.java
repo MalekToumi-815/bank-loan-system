@@ -1,6 +1,7 @@
 package bank.loan.account_service.service;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +72,19 @@ public Page<UserResponse> getAllUsers(Role role, Status status, String search, I
 				.map(user -> ResponseEntity.ok(toResponse(user)))
 				.orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
+
+	public ResponseEntity<List<UserResponse>> getUsersByIdResponse(List<Long> ids) {
+    if (ids == null || ids.isEmpty()) {
+        return ResponseEntity.ok(Collections.emptyList());
+    }
+
+    List<UserResponse> users = userRepository.findAllById(ids)
+            .stream() 
+            .map(this::toResponse)
+            .toList();
+
+    return ResponseEntity.ok(users);
+}
 
 	public Optional<User> updateUser(Long id, User updatedUser) {
 		return userRepository.findById(id).map(existingUser -> {

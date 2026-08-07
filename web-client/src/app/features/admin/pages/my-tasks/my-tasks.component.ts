@@ -519,48 +519,29 @@ export class AdminMyTasksComponent {
   }
 
   private loadAssigneeDetails(loan: ClientLoan) {
-    const requests = [
-      this.buildAssigneeRequest(loan.receptionistId, 'receptionist'),
-      this.buildAssigneeRequest(loan.creditOfficerId, 'creditOfficer'),
-      this.buildAssigneeRequest(loan.bankAdminId, 'bankAdmin')
-    ];
+    const ids: number[] = [];
+    if (loan.receptionistId != null) ids.push(loan.receptionistId);
+    if (loan.creditOfficerId != null) ids.push(loan.creditOfficerId);
+    if (loan.bankAdminId != null) ids.push(loan.bankAdminId);
 
-    forkJoin(requests).subscribe({
-      next: results => {
-        const nextDetails = {
-          receptionist: null as UserResponse | null,
-          creditOfficer: null as UserResponse | null,
-          bankAdmin: null as UserResponse | null
-        };
+    if (ids.length === 0) {
+      this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
+      return;
+    }
 
-        results.forEach(result => {
-          if (result.key === 'receptionist') {
-            nextDetails.receptionist = result.user;
-          }
-          if (result.key === 'creditOfficer') {
-            nextDetails.creditOfficer = result.user;
-          }
-          if (result.key === 'bankAdmin') {
-            nextDetails.bankAdmin = result.user;
-          }
+    this.taskService.getUsersByIds(ids).subscribe({
+      next: users => {
+        const userMap = new Map<number, UserResponse>(users.map(u => [u.id, u]));
+        this.assigneeDetails.set({
+          receptionist: loan.receptionistId != null ? userMap.get(loan.receptionistId) ?? null : null,
+          creditOfficer: loan.creditOfficerId != null ? userMap.get(loan.creditOfficerId) ?? null : null,
+          bankAdmin: loan.bankAdminId != null ? userMap.get(loan.bankAdminId) ?? null : null
         });
-
-        this.assigneeDetails.set(nextDetails);
       },
       error: () => {
         this.assigneeDetails.set({ receptionist: null, creditOfficer: null, bankAdmin: null });
       }
     });
-  }
-
-  private buildAssigneeRequest(userId: number | null, key: 'receptionist' | 'creditOfficer' | 'bankAdmin') {
-    if (userId == null) {
-      return of({ key, user: null as UserResponse | null });
-    }
-
-    return this.taskService.getUser(userId).pipe(
-      map(user => ({ key, user }))
-    );
   }
 
   private setDialogMessage(message: string, type: 'success' | 'error') {

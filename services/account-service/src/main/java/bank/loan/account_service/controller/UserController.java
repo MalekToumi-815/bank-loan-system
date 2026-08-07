@@ -53,6 +53,12 @@ public class UserController {
 		return userService.getUserByIdResponse(id);
 	}
 
+	@PreAuthorize("hasAuthority('MANAGE-USERS') || hasRole('INTERNAL')")
+	@GetMapping("/ids")
+	public ResponseEntity<java.util.List<UserResponse>> getUsersByIds(@RequestParam java.util.List<Long> ids) {
+		return userService.getUsersByIdResponse(ids);
+	}
+
 	@PreAuthorize("hasAuthority('MANAGE-USERS') || authentication.principal == #id || hasRole('INTERNAL')")
 	@PutMapping("/{id}")
 	public ResponseEntity<java.util.Map<String, String>> updateUser(
