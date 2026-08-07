@@ -8,6 +8,7 @@ import { MyTasksComponent } from './features/receptionist/pages/my-tasks/my-task
 import { OfficerMyTasksComponent } from './features/officer/pages/my-tasks/my-tasks.component';
 import { ProfilePageComponent } from './features/profile/pages/profile-page/profile-page.component';
 import { AdminUsersComponent } from './features/admin/pages/users/users.component';
+import { AdminLoansComponent } from './features/admin/pages/loans/loans.component';
 
 export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
@@ -22,6 +23,7 @@ export const routes: Routes = [
       { path: 'officer-tasks', component: OfficerMyTasksComponent },
       { path: 'admin-tasks', component: AdminMyTasksComponent },
       { path: 'admin-users', component: AdminUsersComponent },
+      { path: 'admin-loans', component: AdminLoansComponent },
       { path: 'profile', component: ProfilePageComponent }
     ]
   },

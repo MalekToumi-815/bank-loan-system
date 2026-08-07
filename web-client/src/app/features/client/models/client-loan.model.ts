@@ -14,4 +14,5 @@ export interface ClientLoan {
   receptionistId: number | null;
   creditOfficerId: number | null;
   bankAdminId: number | null;
+  workflowTask: string | null;
 }
