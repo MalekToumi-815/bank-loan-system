@@ -44,6 +44,9 @@ public class Loan {
     @OneToOne(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private RiskAssessment riskAssessment;
 
+    @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Document> document;
+
     public Loan(float amount, LoanType type, int durationMonths) {
         this.submissionDate = new Date();
         this.amount = amount;
@@ -201,5 +204,13 @@ public class Loan {
 
     public void setWorkflowTask(String workflowTask) {
         this.workflowTask = workflowTask;
+    }
+
+    public java.util.List<Document> getDocument() {
+        return document;
+    }
+
+    public void setDocument(java.util.List<Document> document) {
+        this.document = document;
     }
 }
