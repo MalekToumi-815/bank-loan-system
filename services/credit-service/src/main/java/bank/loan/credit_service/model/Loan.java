@@ -1,6 +1,8 @@
 package bank.loan.credit_service.model;
 
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.Date;
 
 @Entity
@@ -45,7 +47,7 @@ public class Loan {
     private RiskAssessment riskAssessment;
 
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private java.util.List<Document> document;
+    private java.util.List<Document> documents;
 
     public Loan(float amount, LoanType type, int durationMonths) {
         this.submissionDate = new Date();
@@ -206,11 +208,20 @@ public class Loan {
         this.workflowTask = workflowTask;
     }
 
-    public java.util.List<Document> getDocument() {
-        return document;
+    public java.util.List<Document> getDocuments() {
+        return documents;
     }
 
-    public void setDocument(java.util.List<Document> document) {
-        this.document = document;
+    public void setDocuments(java.util.List<Document> documents) {
+        this.documents = documents;
+    }
+
+    // Add to documents list and set the loan reference in Document
+    public void addDocument(Document document) {
+        if (this.documents == null) {
+            this.documents = new ArrayList<>();
+        }
+        this.documents.add(document);
+        document.setLoan(this);
     }
 }
