@@ -11,3 +11,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadminpassword
+  bucket: loan-documents
