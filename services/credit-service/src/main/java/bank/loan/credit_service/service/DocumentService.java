@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -83,14 +84,16 @@ public class DocumentService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new IllegalArgumentException("Document not found with id: " + documentId));
         
-        // Force "inline" for preview, or "attachment" for automatic download
-        String dispositionType = inline ? "inline" : "attachment";
         String fileName = document.getFilepath().substring(document.getFilepath().lastIndexOf("_") + 1);
+        String dispositionType = inline ? "inline" : "attachment";
         
-        Map<String, String> extraQueryParams = Map.of(
-            "response-content-disposition", dispositionType + "; filename=\"" + fileName + "\""
-        );
-    
+        // Determine correct MIME type
+        String contentType = fileName.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/png";
+        
+        Map<String, String> extraQueryParams = new HashMap<>();
+        extraQueryParams.put("response-content-type", contentType); // 👈 Forces browser PDF viewer mode
+        extraQueryParams.put("response-content-disposition", dispositionType + "; filename=\"" + fileName + "\"");
+        
         try {
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
@@ -98,7 +101,7 @@ public class DocumentService {
                             .bucket(bucketName)
                             .object(document.getFilepath())
                             .expiry(15, TimeUnit.MINUTES)
-                            .extraQueryParams(extraQueryParams) // 👈 Directs browser to preview or download
+                            .extraQueryParams(extraQueryParams)
                             .build()
             );
         } catch (Exception e) {

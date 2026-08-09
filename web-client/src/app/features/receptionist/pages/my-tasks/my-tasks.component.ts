@@ -6,6 +6,7 @@ import { HttpEventType } from '@angular/common/http';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ClientLoan } from '../../../client/models/client-loan.model';
 import { ReceptionistTask, ReceptionistTaskService } from '../../services/receptionist-task.service';
+import { DocumentListComponent } from '../../../../shared/components/document-list/document-list.component';
 
 export type UploadStatus = 'pending' | 'uploading' | 'done' | 'error';
 
@@ -30,7 +31,7 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.txt'];
 @Component({
   selector: 'app-my-tasks',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DocumentListComponent],
   styleUrl: './my-tasks.component.css',
   template: `
     <section class="my-tasks-page">
@@ -141,6 +142,11 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.txt'];
             <!-- ── Document Upload Section ── -->
             <div class="my-tasks-upload-section">
               <p class="my-tasks-upload-label">Supporting documents</p>
+
+              <!-- Available Documents -->
+              @if (selectedTask()?.loanId) {
+                <app-document-list [loanId]="selectedTask()!.loanId" style="display: block; margin-bottom: 1rem;"></app-document-list>
+              }
 
               <!-- Drop zone -->
               <div
