@@ -5,11 +5,12 @@ import { AdminLoanService, PaginatedLoansResponse } from '../../services/admin-l
 import { ClientLoan } from '../../../client/models/client-loan.model';
 import { UserResponse } from '../../../auth/models/auth.model';
 import { DocumentListComponent } from '../../../../shared/components/document-list/document-list.component';
+import { AmortisationComponent } from '../../../../shared/components/amortisation/amortisation.component';
 
 @Component({
   selector: 'app-admin-loans',
   standalone: true,
-  imports: [CommonModule, FormsModule, DocumentListComponent],
+  imports: [CommonModule, FormsModule, DocumentListComponent, AmortisationComponent],
   styleUrl: './loans.component.css',
   template: `
     <section class="admin-loans-page">
@@ -99,6 +100,15 @@ import { DocumentListComponent } from '../../../../shared/components/document-li
                       >
                         Assignees
                       </button>
+                      @if (loan.status?.toUpperCase() === 'APPROVED') {
+                        <button
+                          type="button"
+                          class="admin-loans-amort-btn"
+                          (click)="openAmortisation(loan)"
+                        >
+                          Amortisation
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>
@@ -296,6 +306,23 @@ import { DocumentListComponent } from '../../../../shared/components/document-li
         </div>
       </div>
     }
+
+    @if (amortisationLoan()) {
+      <div class="admin-loans-dialog-backdrop" (click)="closeAmortisation()">
+        <div class="admin-loans-dialog admin-loans-amort-dialog" (click)="$event.stopPropagation()">
+          <div class="admin-loans-dialog-header">
+            <div>
+              <p class="admin-loans-dialog-kicker">Loan #{{ amortisationLoan()?.id }}</p>
+              <h2>Amortisation Schedule</h2>
+            </div>
+            <button type="button" class="admin-loans-dialog-close" (click)="closeAmortisation()">×</button>
+          </div>
+          <div class="admin-loans-amort-body">
+            <app-amortisation [loanId]="amortisationLoan()!.id"></app-amortisation>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class AdminLoansComponent {
@@ -329,6 +356,8 @@ export class AdminLoansComponent {
   clientInfo = signal<UserResponse | null>(null);
   detailsLoading = signal(false);
   detailsError = signal<string | null>(null);
+
+  amortisationLoan = signal<ClientLoan | null>(null);
 
   constructor() {
     this.loadLoans();
@@ -414,6 +443,14 @@ export class AdminLoansComponent {
     this.assignees.set([]);
     this.assigneesError.set(null);
     this.assigneesLoading.set(false);
+  }
+
+  openAmortisation(loan: ClientLoan) {
+    this.amortisationLoan.set(loan);
+  }
+
+  closeAmortisation() {
+    this.amortisationLoan.set(null);
   }
 
   applyFilters() {

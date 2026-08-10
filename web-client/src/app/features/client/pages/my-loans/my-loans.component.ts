@@ -5,11 +5,12 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { ClientLoan } from '../../models/client-loan.model';
 import { ClientLoanService, PaginatedLoansResponse } from '../../services/client-loan.service';
 import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-details-dialog/loan-details-dialog.component';
+import { AmortisationComponent } from '../../../../shared/components/amortisation/amortisation.component';
 
 @Component({
   selector: 'app-my-loans',
   standalone: true,
-  imports: [CommonModule, LoanDetailsDialogComponent],
+  imports: [CommonModule, LoanDetailsDialogComponent, AmortisationComponent],
   styleUrl: './my-loans.component.css',
   template: `
     <section class="my-loans-page">
@@ -85,6 +86,9 @@ import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-d
                     @if (isApproved(loan) || isRejected(loan)) {
                       <button class="my-loans-details-button" type="button" (click)="openLoanDialog(loan)">Details</button>
                     }
+                    @if (isApproved(loan)) {
+                      <button class="my-loans-amort-button" type="button" (click)="openAmortisation(loan)">Amortisation</button>
+                    }
                   </td>
                 </tr>
               }
@@ -128,6 +132,23 @@ import { LoanDetailsDialogComponent } from '../../../../shared/components/loan-d
         kicker="Approved loan"
         (closed)="closeLoanDialog()"
       />
+
+      @if (amortisationLoan()) {
+        <div class="my-loans-dialog-backdrop" (click)="closeAmortisation()">
+          <div class="my-loans-dialog" (click)="$event.stopPropagation()">
+            <div class="my-loans-dialog-header">
+              <div>
+                <p class="my-loans-dialog-kicker">Loan #{{ amortisationLoan()?.id }}</p>
+                <h2>Amortisation Schedule</h2>
+              </div>
+              <button type="button" class="my-loans-dialog-close" (click)="closeAmortisation()">×</button>
+            </div>
+            <div class="my-loans-dialog-body">
+              <app-amortisation [loanId]="amortisationLoan()!.id"></app-amortisation>
+            </div>
+          </div>
+        </div>
+      }
     </section>
   `
 })
@@ -154,6 +175,7 @@ export class MyLoansComponent {
   searchTerm = signal('');
   detailsOpen = signal(false);
   selectedLoan = signal<ClientLoan | null>(null);
+  amortisationLoan = signal<ClientLoan | null>(null);
   page = signal(0);
   pageSize = signal(10);
 
@@ -214,6 +236,14 @@ export class MyLoansComponent {
   closeLoanDialog() {
     this.detailsOpen.set(false);
     this.selectedLoan.set(null);
+  }
+
+  openAmortisation(loan: ClientLoan) {
+    this.amortisationLoan.set(loan);
+  }
+
+  closeAmortisation() {
+    this.amortisationLoan.set(null);
   }
 
   loanLabel(loan: ClientLoan): string {
