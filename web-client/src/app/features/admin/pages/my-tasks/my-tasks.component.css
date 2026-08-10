@@ -169,8 +169,27 @@
   box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18);
   padding: 1.2rem;
   max-height: calc(100vh - 2rem);
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+.admin-tasks-dialog.admin-tasks-dialog--narrow {
+  width: min(680px, 100%);
+}
+
+
+.admin-tasks-dialog-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding-right: 0.5rem;
+}
+
+.admin-tasks-dialog-scrollable::-webkit-scrollbar { width: 5px; }
+.admin-tasks-dialog-scrollable::-webkit-scrollbar-track { background: transparent; }
+.admin-tasks-dialog-scrollable::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.admin-tasks-dialog-scrollable::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 .admin-tasks-dialog-header {
   display: flex;
@@ -180,6 +199,7 @@
   margin-bottom: 1rem;
   padding-bottom: 0.9rem;
   border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .admin-tasks-dialog-kicker {
@@ -210,6 +230,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
   margin: 0;
+}
+
+.admin-tasks-dialog-body--full .admin-tasks-dialog-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .admin-tasks-field-row-wide {
@@ -263,6 +287,10 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.admin-tasks-dialog-body--full .admin-tasks-risk-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .admin-tasks-risk-row {
@@ -340,6 +368,10 @@
   align-items: start;
 }
 
+.admin-tasks-dialog-body.admin-tasks-dialog-body--full {
+  grid-template-columns: 1fr;
+}
+
 .admin-tasks-dialog-main,
 .admin-tasks-dialog-side {
   display: flex;
@@ -395,6 +427,16 @@
   background: #ecfdf5;
   color: #166534;
   border: 1px solid #a7f3d0;
+}
+
+.admin-tasks-dialog-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-top: 1rem;
+  margin-top: 0.85rem;
+  border-top: 1px solid #e2e8f0;
 }
 
 @media (max-width: 700px) {

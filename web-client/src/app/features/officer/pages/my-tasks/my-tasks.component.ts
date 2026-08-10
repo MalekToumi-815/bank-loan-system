@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ClientLoan } from '../../../client/models/client-loan.model';
 import { OfficerTask, OfficerTaskService } from '../../services/officer-task.service';
+import { DocumentListComponent } from '../../../../shared/components/document-list/document-list.component';
 
 type TaskFilter = 'validation' | 'recommendation';
 type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
@@ -11,7 +12,7 @@ type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
 @Component({
   selector: 'app-officer-my-tasks',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DocumentListComponent],
   styleUrl: './my-tasks.component.css',
   template: `
     <section class="officer-tasks-page">
@@ -85,7 +86,8 @@ type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
             <button class="officer-tasks-dialog-close" type="button" (click)="closeDialog()">×</button>
           </div>
 
-          @if (dialogLoading()) {
+          <div class="officer-tasks-dialog-body">
+            @if (dialogLoading()) {
             <div class="officer-tasks-dialog-loading">Loading loan details...</div>
           }
 
@@ -122,6 +124,13 @@ type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
             </div>
           }
 
+          @if (!dialogLoading() && selectedTask()?.loanId) {
+            <div style="margin-top: 1.1rem;">
+              <p style="margin: 0 0 0.55rem; font-size: 0.9rem; font-weight: 700; color: #334155;">Supporting documents</p>
+              <app-document-list [loanId]="selectedTask()!.loanId" style="display: block; margin-bottom: 1rem;"></app-document-list>
+            </div>
+          }
+
           @if (selectedFilter() === 'recommendation') {
             <div class="officer-tasks-form-wrap">
               <label class="officer-tasks-form-label" for="recommendation-text">Recommendation</label>
@@ -147,35 +156,39 @@ type RiskScore = 'ONE' | 'TWO' | 'THREE' | 'FOUR';
             </div>
           }
 
-          <div class="officer-tasks-dialog-actions">
-            @if (selectedFilter() === 'validation') {
-              <button class="officer-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Validate</button>
-              <button class="officer-tasks-reject-button" type="button" (click)="showRejectionReasonInput.set(true)">Reject</button>
-            } @else {
-              <button class="officer-tasks-complete-button" type="button" (click)="completeRecommendationTask()">Complete task</button>
-            }
           </div>
 
-          @if (selectedFilter() === 'validation' && showRejectionReasonInput()) {
-            <div class="officer-tasks-form-wrap">
-              <label class="officer-tasks-form-label" for="rejection-reason">Rejection reason</label>
-              <textarea
-                id="rejection-reason"
-                class="officer-tasks-textarea"
-                rows="4"
-                [value]="rejectionReason()"
-                (input)="rejectionReason.set($any($event.target).value)">
-              </textarea>
-
-              <button class="officer-tasks-complete-button" type="button" (click)="submitRejection()">Submit rejection</button>
+          <div class="officer-tasks-dialog-footer">
+            <div class="officer-tasks-dialog-actions">
+              @if (selectedFilter() === 'validation') {
+                <button class="officer-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Validate</button>
+                <button class="officer-tasks-reject-button" type="button" (click)="showRejectionReasonInput.set(true)">Reject</button>
+              } @else {
+                <button class="officer-tasks-complete-button" type="button" (click)="completeRecommendationTask()">Complete task</button>
+              }
             </div>
-          }
 
-          @if (dialogMessage()) {
-            <div class="officer-tasks-dialog-message" [class.error]="dialogMessageType() === 'error'">
-              {{ dialogMessage() }}
-            </div>
-          }
+            @if (selectedFilter() === 'validation' && showRejectionReasonInput()) {
+              <div class="officer-tasks-form-wrap">
+                <label class="officer-tasks-form-label" for="rejection-reason">Rejection reason</label>
+                <textarea
+                  id="rejection-reason"
+                  class="officer-tasks-textarea"
+                  rows="4"
+                  [value]="rejectionReason()"
+                  (input)="rejectionReason.set($any($event.target).value)">
+                </textarea>
+
+                <button class="officer-tasks-complete-button" type="button" (click)="submitRejection()">Submit rejection</button>
+              </div>
+            }
+
+            @if (dialogMessage()) {
+              <div class="officer-tasks-dialog-message" [class.error]="dialogMessageType() === 'error'">
+                {{ dialogMessage() }}
+              </div>
+            }
+          </div>
         </div>
       </div>
     }

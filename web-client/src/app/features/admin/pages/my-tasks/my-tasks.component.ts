@@ -8,13 +8,14 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { UserResponse } from '../../../auth/models/auth.model';
 import { ClientLoan } from '../../../client/models/client-loan.model';
 import { AdminRiskAssessment, AdminTask, AdminTaskService } from '../../services/admin-task.service';
+import { DocumentListComponent } from '../../../../shared/components/document-list/document-list.component';
 
 type TaskFilter = 'validation' | 'decision';
 
 @Component({
   selector: 'app-admin-my-tasks',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DocumentListComponent],
   styleUrl: './my-tasks.component.css',
   template: `
     <section class="admin-tasks-page">
@@ -79,7 +80,7 @@ type TaskFilter = 'validation' | 'decision';
 
     @if (dialogOpen()) {
       <div class="admin-tasks-dialog-backdrop" (click)="closeDialog()">
-        <div class="admin-tasks-dialog" (click)="$event.stopPropagation()">
+        <div class="admin-tasks-dialog" [class.admin-tasks-dialog--narrow]="selectedFilter() === 'validation'" (click)="$event.stopPropagation()">
           <div class="admin-tasks-dialog-header">
             <div>
               <p class="admin-tasks-dialog-kicker">{{ selectedFilter() === 'validation' ? 'Validation task' : 'Decision task' }}</p>
@@ -88,7 +89,8 @@ type TaskFilter = 'validation' | 'decision';
             <button class="admin-tasks-dialog-close" type="button" (click)="closeDialog()">×</button>
           </div>
 
-          @if (dialogLoading()) {
+          <div class="admin-tasks-dialog-scrollable">
+            @if (dialogLoading()) {
             <div class="admin-tasks-dialog-loading">Loading loan and risk details...</div>
           }
 
@@ -96,7 +98,7 @@ type TaskFilter = 'validation' | 'decision';
             <div class="admin-tasks-dialog-error">{{ dialogError() }}</div>
           }
 
-          <div class="admin-tasks-dialog-body">
+          <div class="admin-tasks-dialog-body" [class.admin-tasks-dialog-body--full]="selectedFilter() === 'validation'">
             <div class="admin-tasks-dialog-main">
               @if (!dialogLoading() && loanDetails()) {
                 <div class="admin-tasks-dialog-grid">
@@ -124,6 +126,13 @@ type TaskFilter = 'validation' | 'decision';
                     <span>Status</span>
                     <strong>{{ statusLabel(loanDetails()?.status ?? null) }}</strong>
                   </div>
+                </div>
+              }
+
+              @if (!dialogLoading() && selectedTask()?.loanId) {
+                <div class="admin-tasks-risk-card" style="margin-top: 12px;">
+                  <div class="admin-tasks-risk-card-title">Supporting documents</div>
+                  <app-document-list [loanId]="selectedTask()!.loanId" style="display: block;"></app-document-list>
                 </div>
               }
 
@@ -227,36 +236,14 @@ type TaskFilter = 'validation' | 'decision';
                 </div>
               }
 
-              <div class="admin-tasks-task-panel admin-tasks-task-panel-actions">
-                <div class="admin-tasks-task-panel-title">Task actions</div>
-                <div class="admin-tasks-dialog-actions">
-                  @if (selectedFilter() === 'validation') {
-                    <button class="admin-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Approve</button>
-                    <button class="admin-tasks-reject-button" type="button" (click)="showRejectionReasonInput.set(true)">Reject</button>
-                  } @else {
+              @if (selectedFilter() === 'decision') {
+                <div class="admin-tasks-task-panel admin-tasks-task-panel-actions">
+                  <div class="admin-tasks-task-panel-title">Task actions</div>
+                  <div class="admin-tasks-dialog-actions">
                     <button class="admin-tasks-complete-button" type="button" (click)="completeDecisionTask()">Complete task</button>
-                  }
-                </div>
-
-                @if (selectedFilter() === 'validation' && showRejectionReasonInput()) {
-                  <div class="admin-tasks-form-grid" style="margin-top: 12px;">
-                    <div class="admin-tasks-form-field" style="grid-column: 1 / -1;">
-                      <label class="admin-tasks-form-label" for="admin-rejection-reason">Rejection reason</label>
-                      <textarea
-                        id="admin-rejection-reason"
-                        class="admin-tasks-input"
-                        rows="4"
-                        [(ngModel)]="rejectionReasonInput"
-                        name="rejectionReason"
-                        placeholder="Enter the reason for rejecting this loan"
-                      ></textarea>
-                    </div>
-                    <div class="admin-tasks-form-field" style="grid-column: 1 / -1;">
-                      <button class="admin-tasks-complete-button" type="button" (click)="submitRejection()">Submit rejection</button>
-                    </div>
                   </div>
-                }
-              </div>
+                </div>
+              }
             </div>
           </div>
 
@@ -266,9 +253,38 @@ type TaskFilter = 'validation' | 'decision';
             </div>
           }
         </div>
+
+        @if (selectedFilter() === 'validation') {
+          <div class="admin-tasks-dialog-footer">
+            <div class="admin-tasks-dialog-actions">
+              <button class="admin-tasks-accept-button" type="button" (click)="completeValidationTask(true)">Approve</button>
+              <button class="admin-tasks-reject-button" type="button" (click)="showRejectionReasonInput.set(true)">Reject</button>
+            </div>
+
+            @if (showRejectionReasonInput()) {
+              <div class="admin-tasks-form-grid" style="margin-top: 12px;">
+                <div class="admin-tasks-form-field" style="grid-column: 1 / -1;">
+                  <label class="admin-tasks-form-label" for="admin-rejection-reason">Rejection reason</label>
+                  <textarea
+                    id="admin-rejection-reason"
+                    class="admin-tasks-input"
+                    rows="4"
+                    [(ngModel)]="rejectionReasonInput"
+                    name="rejectionReason"
+                    placeholder="Enter the reason for rejecting this loan"
+                  ></textarea>
+                </div>
+                <div class="admin-tasks-form-field" style="grid-column: 1 / -1;">
+                  <button class="admin-tasks-complete-button" type="button" (click)="submitRejection()">Submit rejection</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
-    }
-  `
+    </div>
+  }
+`
 })
 export class AdminMyTasksComponent {
   private taskService = inject(AdminTaskService);

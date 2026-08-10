@@ -300,6 +300,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  max-height: min(88vh, 820px);
 }
 
 .admin-loans-dialog-header {
@@ -348,9 +349,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-height: 380px;
+  flex: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
+
+.admin-loans-assignees-list::-webkit-scrollbar { width: 5px; }
+.admin-loans-assignees-list::-webkit-scrollbar-track { background: transparent; }
+.admin-loans-assignees-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.admin-loans-assignees-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 .admin-loans-assignee-card {
   display: flex;
@@ -428,9 +435,15 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  max-height: 520px;
+  flex: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
+
+.admin-loans-details-content::-webkit-scrollbar { width: 5px; }
+.admin-loans-details-content::-webkit-scrollbar-track { background: transparent; }
+.admin-loans-details-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.admin-loans-details-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 .admin-loans-section {
   display: flex;

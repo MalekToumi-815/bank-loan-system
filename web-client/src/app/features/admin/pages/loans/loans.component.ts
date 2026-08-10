@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { AdminLoanService, PaginatedLoansResponse } from '../../services/admin-loan.service';
 import { ClientLoan } from '../../../client/models/client-loan.model';
 import { UserResponse } from '../../../auth/models/auth.model';
+import { DocumentListComponent } from '../../../../shared/components/document-list/document-list.component';
 
 @Component({
   selector: 'app-admin-loans',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DocumentListComponent],
   styleUrl: './loans.component.css',
   template: `
     <section class="admin-loans-page">
@@ -246,6 +247,13 @@ import { UserResponse } from '../../../auth/models/auth.model';
                 </div>
               }
             </div>
+
+            @if (selectedLoanForDetails()?.id) {
+              <div class="admin-loans-section" style="margin-top: 1.5rem;">
+                <h3 class="admin-loans-section-title">Supporting Documents</h3>
+                <app-document-list [loanId]="selectedLoanForDetails()!.id" style="display: block;"></app-document-list>
+              </div>
+            }
           </div>
         </div>
       </div>
