@@ -13,7 +13,7 @@ export class AmortisationService {
 
   getAmortisation(loanId: number, page: number): Observable<AmortisationResponse> {
     return this.http.get<AmortisationResponse>(
-      `${this.baseUrl}credit/loans/${loanId}/ammortisation?pageNumber=${page}`
+      `${this.baseUrl}credit/loans/${loanId}/ammortisation?page=${page}`
     );
   }
 }
