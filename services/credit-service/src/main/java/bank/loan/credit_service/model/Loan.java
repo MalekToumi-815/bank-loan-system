@@ -49,6 +49,9 @@ public class Loan {
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<Document> documents;
 
+    @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Notification> notifications;
+
     public Loan(float amount, LoanType type, int durationMonths) {
         this.submissionDate = new Date();
         this.amount = amount;
@@ -223,5 +226,13 @@ public class Loan {
         }
         this.documents.add(document);
         document.setLoan(this);
+    }
+
+    public java.util.List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(java.util.List<Notification> notifications) {
+        this.notifications = notifications;
     }
 }
