@@ -78,8 +78,18 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.currentUser = user;
       if (user) {
         this.notificationService.connect();
+        
+        // Fetch initial unread count
+        this.notificationService.getUnreadCount().subscribe({
+          next: (count) => {
+            this.unreadCount = count;
+            this.cdr.markForCheck();
+          },
+          error: (err) => console.error('[NotificationBell] Failed to fetch unread count', err)
+        });
       } else {
         this.notificationService.disconnect();
+        this.unreadCount = 0;
       }
     });
   }
@@ -121,7 +131,21 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   onNotificationClick(): void {
+    const notification = this.activeNotification;
     this.dismissPopup();
+
+    if (notification) {
+      this.notificationService.markAsRead(notification.id).subscribe({
+        next: () => {
+          if (this.unreadCount > 0) {
+            this.unreadCount--;
+            this.cdr.markForCheck();
+          }
+        },
+        error: (err) => console.error('[NotificationBell] Failed to mark as read', err)
+      });
+    }
+
     let targetUrl = '/dashboard';
     const role = this.currentUser?.role?.toUpperCase();
     
