@@ -72,10 +72,10 @@ public class NotificationController {
 
     @PreAuthorize("hasRole('INTERNAL')")
     @PostMapping
-    public ResponseEntity<Void> createNotification(@RequestBody InternalNotificationRequest request) {
+    public ResponseEntity<NotificationDTO> createNotification(@RequestBody InternalNotificationRequest request) {
         
-        notificationService.createNotification(request.userId(), request.loanId(), request.message());
-        return ResponseEntity.ok().build();
+        NotificationDTO notif = notificationService.createNotification(request.userId(), request.loanId(), request.message());
+        return ResponseEntity.ok(notif);
     }
 
     public record InternalNotificationRequest(

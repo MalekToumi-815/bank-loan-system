@@ -30,7 +30,7 @@ public class NotificationService {
     /**
      * Creates a notification and updates the Loan's notification list in memory.
      */
-    public Notification createNotification(Long userId, Long loanId, String message) {
+    public NotificationDTO createNotification(Long userId, Long loanId, String message) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new EntityNotFoundException("Loan not found with ID: " + loanId));
 
@@ -42,7 +42,16 @@ public class NotificationService {
         }
         loan.getNotifications().add(notification);
 
-        return notificationRepository.save(notification);
+        notificationRepository.save(notification);
+
+        return new NotificationDTO(
+                notification.getId(),
+                loan.getId(),
+                notification.getUserId(),
+                notification.getMessage(),
+                notification.getTimestamp(),
+                notification.isRead()
+        );
     }
 
     /**
