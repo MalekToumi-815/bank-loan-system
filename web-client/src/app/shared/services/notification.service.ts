@@ -16,6 +16,7 @@ export class NotificationService implements OnDestroy {
   private stompClient: Client | null = null;
   private readonly notifications$ = new Subject<Notification>();
   private readonly connected$ = new BehaviorSubject<boolean>(false);
+  private readonly unreadCountSubject = new BehaviorSubject<number>(0);
 
   /** Emits each notification as it arrives in real-time. */
   get onNotification(): Observable<Notification> {
@@ -25,6 +26,11 @@ export class NotificationService implements OnDestroy {
   /** Emits the current WebSocket connection status. */
   get isConnected(): Observable<boolean> {
     return this.connected$.asObservable();
+  }
+
+  /** Emits the current unread notifications count. */
+  get unreadCount$(): Observable<number> {
+    return this.unreadCountSubject.asObservable();
   }
 
   /**
@@ -60,6 +66,9 @@ export class NotificationService implements OnDestroy {
             const notification: Notification = JSON.parse(message.body);
             console.log('[NotificationService] Notification received:', notification);
             this.notifications$.next(notification);
+            
+            // Increment unread count when a new notification arrives
+            this.unreadCountSubject.next(this.unreadCountSubject.value + 1);
           });
         });
       },
@@ -153,6 +162,19 @@ export class NotificationService implements OnDestroy {
    * Get unread notifications count
    */
   getUnreadCount(): Observable<number> {
-    return this.http.get<number>(`${environment.apiUrl}credit/notifications/unread-count`);
+    const req = this.http.get<number>(`${environment.apiUrl}credit/notifications/unread-count`);
+    req.subscribe({
+      next: (count) => this.unreadCountSubject.next(count),
+      error: (err) => console.error('[NotificationService] Failed to fetch unread count', err)
+    });
+    return req;
+  }
+
+  decrementUnreadCount(amount = 1): void {
+    this.unreadCountSubject.next(Math.max(0, this.unreadCountSubject.value - amount));
+  }
+
+  clearUnreadCount(): void {
+    this.unreadCountSubject.next(0);
   }
 }

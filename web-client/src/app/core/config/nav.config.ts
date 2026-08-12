@@ -38,7 +38,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Notifications',
       icon: 'bell',
-      route: '',
+      route: '/dashboard/notifications',
       roles: [UserRole.CLIENT],
       section: 'Account'
     },
@@ -70,7 +70,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Notifications',
       icon: 'bell',
-      route: '',
+      route: '/dashboard/notifications',
       roles: [UserRole.BANK_RECEPTIONIST],
       section: 'Account'
     },
@@ -102,7 +102,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Notifications',
       icon: 'bell',
-      route: '',
+      route: '/dashboard/notifications',
       roles: [UserRole.LOAN_OFFICER],
       section: 'Account'
     },
@@ -148,7 +148,7 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     {
       label: 'Notifications',
       icon: 'bell',
-      route: '',
+      route: '/dashboard/notifications',
       roles: [UserRole.BANK_ADMIN],
       section: 'Account'
     },

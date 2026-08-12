@@ -73,6 +73,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.handleNewNotification(notification);
     });
 
+    // Subscribe to the global unread count
+    this.notificationService.unreadCount$.subscribe(count => {
+      this.unreadCount = count;
+      this.cdr.markForCheck();
+    });
+
     // Auto-connect/disconnect WebSocket based on auth state
     this.authSub = this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
@@ -81,23 +87,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
         
         // Fetch initial unread count
         this.notificationService.getUnreadCount().subscribe({
-          next: (count) => {
-            this.unreadCount = count;
-            this.cdr.markForCheck();
-          },
           error: (err) => console.error('[NotificationBell] Failed to fetch unread count', err)
         });
       } else {
         this.notificationService.disconnect();
-        this.unreadCount = 0;
       }
     });
   }
 
   private handleNewNotification(notification: Notification): void {
-    // Increment unread count
-    this.unreadCount++;
-
     // Replace any existing popup with the new notification
     this.clearAutoDismissTimer();
     this.activeNotification = notification;
@@ -127,7 +125,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   onBellClick(): void {
     // Navigate to notifications page
-    this.router.navigate(['/notifications']);
+    this.router.navigate(['/dashboard/notifications']);
   }
 
   onNotificationClick(): void {
@@ -137,10 +135,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (notification) {
       this.notificationService.markAsRead(notification.id).subscribe({
         next: () => {
-          if (this.unreadCount > 0) {
-            this.unreadCount--;
-            this.cdr.markForCheck();
-          }
+          this.notificationService.decrementUnreadCount();
         },
         error: (err) => console.error('[NotificationBell] Failed to mark as read', err)
       });

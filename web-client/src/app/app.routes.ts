@@ -9,6 +9,7 @@ import { OfficerMyTasksComponent } from './features/officer/pages/my-tasks/my-ta
 import { ProfilePageComponent } from './features/profile/pages/profile-page/profile-page.component';
 import { AdminUsersComponent } from './features/admin/pages/users/users.component';
 import { AdminLoansComponent } from './features/admin/pages/loans/loans.component';
+import { NotificationsComponent } from './features/notifications/pages/notifications/notifications.component';
 
 export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
@@ -24,7 +25,8 @@ export const routes: Routes = [
       { path: 'admin-tasks', component: AdminMyTasksComponent },
       { path: 'admin-users', component: AdminUsersComponent },
       { path: 'admin-loans', component: AdminLoansComponent },
-      { path: 'profile', component: ProfilePageComponent }
+      { path: 'profile', component: ProfilePageComponent },
+      { path: 'notifications', component: NotificationsComponent }
     ]
   },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
