@@ -14,4 +14,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
            "AND (:loanId IS NULL OR n.loan.id = :loanId) " +
            "AND (:read IS NULL OR n.read = :read)")
     Page<Notification> findByCriteria(Long userId, Long loanId, Boolean read, Pageable pageable);
+
+    long countByUserIdAndRead(Long userId, boolean read);
 }

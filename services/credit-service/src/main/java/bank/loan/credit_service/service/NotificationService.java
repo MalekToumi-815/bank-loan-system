@@ -120,4 +120,11 @@ public class NotificationService {
 
         notificationRepository.delete(notification);
     }
+
+    /**
+     * get unread notification count for a specific user
+     */
+    public long getUnreadNotificationCount(Long userId) {
+        return notificationRepository.countByUserIdAndRead(userId, false);
+    }
 }

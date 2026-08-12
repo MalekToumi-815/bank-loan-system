@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/notifications")
@@ -78,6 +81,13 @@ public class NotificationController {
         return ResponseEntity.ok(notif);
     }
 
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getUnreadNotificationCount(@AuthenticationPrincipal Long userId) {
+        
+        long count = notificationService.getUnreadNotificationCount(userId);
+        return ResponseEntity.ok(count);
+    }
+    
     public record InternalNotificationRequest(
             Long userId, 
             Long loanId, 
