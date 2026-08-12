@@ -25,7 +25,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 4. Registers the connection endpoint that your Angular client (via the Gateway) will target
-        registry.addEndpoint("/ws-workflow")
+        registry.addEndpoint("workflow/ws-workflow")
                 .setAllowedOriginPatterns("*"); // Adjust for production CORS policies
     }
 }

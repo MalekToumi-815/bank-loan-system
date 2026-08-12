@@ -1,7 +1,5 @@
 package bank.loan.gateway_service.filter;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,11 +14,13 @@ import org.springframework.web.server.ServerWebExchange;
 
 import bank.loan.gateway_service.dto.TokenRequest;
 import bank.loan.gateway_service.dto.ValidationResponse;
-
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
+    
     @Value("${internal.shared-secret}")
     private String internalSecret;
 
@@ -31,15 +31,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     private static final List<String> PUBLIC_POST_ENDPOINTS = List.of(
             "/users",
             "/forgot-password",
-            "/reset-password");
+            "/reset-password"
+    );
 
     public AuthenticationFilter(WebClient.Builder builder) {
         super(Config.class);
-
         this.webClient = builder
                 .baseUrl("http://oauth-service")
                 .build();
-
         log.info("AuthenticationFilter initialized");
     }
 
@@ -48,9 +47,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         return (exchange, chain) -> {
 
             String path = exchange.getRequest().getPath().value();
-            String method = exchange.getRequest()
-                    .getMethod()
-                    .name();
+            String method = exchange.getRequest().getMethod().name();
 
             log.info("Incoming request: {} {}", method, path);
 
@@ -60,18 +57,37 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 return chain.filter(exchange);
             }
 
-            String authHeader = exchange.getRequest()
-                    .getHeaders()
-                    .getFirst(HttpHeaders.AUTHORIZATION);
+            // --- WEB-SOCKET AWARE TOKEN EXTRACTION ---
+            String token = null;
+            boolean isWebSocketHandshake = false;
+            String wsProtocolToKeep = "v10.stomp"; // Default fallback
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                log.warn("Missing or invalid Authorization header");
+            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+            
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                // 1. Standard HTTP Request
+                token = authHeader.substring(7);
+            } else {
+                // 2. WebSocket Handshake Request (Token is in Sec-WebSocket-Protocol)
+                String wsProtocolHeader = exchange.getRequest().getHeaders().getFirst("Sec-WebSocket-Protocol");
+                if (wsProtocolHeader != null && wsProtocolHeader.contains(",")) {
+                    String[] protocols = wsProtocolHeader.split(",");
+                    wsProtocolToKeep = protocols[0].trim(); // Usually "v10.stomp"
+                    token = protocols[1].trim();            // The JWT token
+                    isWebSocketHandshake = true;
+                }
+            }
+
+            if (token == null) {
+                log.warn("Missing or invalid token in Authorization or Sec-WebSocket-Protocol header");
                 return unauthorized(exchange);
             }
 
-            String token = authHeader.substring(7);
-
             log.debug("Sending token validation request to oauth-service");
+
+            // We need these variables to be effectively final for the reactive pipeline
+            final boolean finalIsWebSocket = isWebSocketHandshake;
+            final String finalWsProtocol = wsProtocolToKeep;
 
             return webClient.post()
                     .uri("/validate")
@@ -88,32 +104,33 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                             return unauthorized(exchange);
                         }
 
-                        log.info("Authenticated user : {}", response.userId(), response.role(), response.permissions());
+                        log.info("Authenticated user : {}", response.userId());
 
+                        // --- INJECT HEADERS (Works for both HTTP and WebSockets) ---
                         ServerHttpRequest request = exchange.getRequest()
                                 .mutate()
                                 .headers(headers -> {
                                     headers.remove("X-User-Id");
-                                    headers.add(
-                                            "X-User-Id",
-                                            response.userId().toString());
+                                    headers.add("X-User-Id", response.userId().toString());
                                     headers.remove("X-Role");
-                                    headers.add(
-                                            "X-Role",
-                                            response.role());
+                                    headers.add("X-Role", response.role());
                                     headers.remove("X-Permissions");
-                                    headers.add(
-                                            "X-Permissions",
-                                            String.join(",", response.permissions()));
+                                    headers.add("X-Permissions", String.join(",", response.permissions()));
                                 })
                                 .build();
 
-                        log.debug("Injected User header");
+                        log.debug("Injected User headers");
 
-                        return chain.filter(
-                                exchange.mutate()
-                                        .request(request)
-                                        .build());
+                        // --- CLEAN RESPONSE FOR WEBSOCKETS (CRITICAL) ---
+                        if (finalIsWebSocket) {
+                            exchange.getResponse().beforeCommit(() -> {
+                                log.debug("Cleaning Sec-WebSocket-Protocol response header for STOMP client");
+                                exchange.getResponse().getHeaders().set("Sec-WebSocket-Protocol", finalWsProtocol);
+                                return Mono.empty();
+                            });
+                        }
+
+                        return chain.filter(exchange.mutate().request(request).build());
                     })
                     .onErrorResume(exception -> {
                         log.error("Failed to validate token with oauth-service", exception);
@@ -123,15 +140,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     private Mono<Void> unauthorized(ServerWebExchange exchange) {
-
         log.warn("Returning 401 Unauthorized");
-
-        exchange.getResponse()
-                .setStatusCode(HttpStatus.UNAUTHORIZED);
-
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         return exchange.getResponse().setComplete();
     }
 
-    public static class Config {
-    }
+    public static class Config {}
+    
 }
