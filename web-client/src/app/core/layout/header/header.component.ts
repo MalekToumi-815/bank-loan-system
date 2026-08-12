@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../features/auth/services/auth.service';
+import { NotificationBellComponent } from '../../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NotificationBellComponent],
   styleUrl: './header.component.css',
   template: `
     <header class="app-header h-16 bg-slate-900 border-b border-slate-800 text-white px-6 flex items-center justify-between shadow-sm">
@@ -52,6 +53,9 @@ import { AuthService } from '../../../features/auth/services/auth.service';
             Not Authenticated
           </div>
         }
+
+        <!-- Notification Bell -->
+        <app-notification-bell />
 
         <!-- Logout Button -->
         <button
