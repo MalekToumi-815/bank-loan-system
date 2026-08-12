@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import bank.loan.workflow_service.dto.NotificationDTO;
+
 @Service
 public class NotificationService {
     
@@ -20,15 +22,15 @@ public class NotificationService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    private void sendNotification(Long userId, Long loanId, String message) {
+    private NotificationDTO sendNotification(Long userId, Long loanId, String message) {
         InternalNotificationRequest request = new InternalNotificationRequest(userId, loanId, message);
 
-        creditClient.post()
+        return creditClient.post()
                 .uri("/notifications")
                 .header("X-Internal-Secret", internalSecret)
                 .body(request)
                 .retrieve()
-                .toBodilessEntity();
+                .body(NotificationDTO.class);
     }
 
     private record InternalNotificationRequest(
@@ -39,14 +41,14 @@ public class NotificationService {
 
     public void processNotification(Long userId, Long loanId, String message) {
         
-        sendNotification(userId, loanId, message);
+        NotificationDTO notif = sendNotification(userId, loanId, message);
 
         // 2. Push real-time event to the user's personal WebSocket queue
         // This targets /user/{userId}/queue/notifications automatically
         messagingTemplate.convertAndSendToUser(
                 String.valueOf(userId),
                 "/queue/notifications",
-                message
+                notif
         );
     }
 }
