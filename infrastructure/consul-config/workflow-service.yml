@@ -4,6 +4,11 @@ spring:
     username: postgres
     password: ${SPRING_DATASOURCE_PASSWORD:mlk123}
     driver-class-name: org.postgresql.Driver
+  rabbitmq:
+    host: localhost  
+    port: 5672
+    username: guest
+    password: guest
 
 flowable:
   # Automatically check the database and create Flowable tables on startup
