@@ -4,14 +4,18 @@ import bank.loan.account_service.model.PasswordResetToken;
 import bank.loan.account_service.repository.PasswordResetTokenRepository;
 import bank.loan.account_service.repository.UserRepository;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import bank.loan.account_service.model.User;
+import bank.loan.account_service.model.EmailRequest;
+import bank.loan.account_service.model.EmailRequest.NotificationType;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,15 +24,15 @@ public class PasswordResetService {
 
     private final PasswordResetTokenRepository tokenRepository;
     private final UserRepository userRepository;
-    private final PasswordResetNotifier notifier;
+    private final RabbitTemplate rabbitTemplate;
     private final PasswordEncoder passwordEncoder;
 
     public PasswordResetService(PasswordResetTokenRepository tokenRepository,
             UserRepository userRepository,
-            PasswordResetNotifier notifier) {
+            RabbitTemplate rabbitTemplate) {
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
-        this.notifier = notifier;
+        this.rabbitTemplate = rabbitTemplate;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -42,6 +46,7 @@ public class PasswordResetService {
             if (user != null) {
                 // Delete old tokens safely
                 tokenRepository.deleteByUserId(user.getId());
+                tokenRepository.flush();
 
                 String token = UUID.randomUUID().toString();
                 LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
@@ -49,7 +54,17 @@ public class PasswordResetService {
                 PasswordResetToken resetToken = new PasswordResetToken(token, user, expiryDate);
                 tokenRepository.save(resetToken);
 
-                notifier.sendResetLink(email, token);
+                // Build the message payload for RabbitMQ
+                EmailRequest emailRequest = new EmailRequest(
+                    email,
+                    NotificationType.PASSWORD_RESET,
+                    Map.of(
+                        "token", token 
+                    )
+                );
+
+                // Publish the message to the queue
+                rabbitTemplate.convertAndSend("email.queue", emailRequest);
             }
         } catch (Exception e) {
             // Log silently to prevent email enumeration
