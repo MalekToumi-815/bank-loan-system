@@ -16,7 +16,6 @@ public class OfficerRejectionEmailStrategy implements EmailTemplateStrategy {
     public EmailContent buildEmail(Map<String, String> variables, String frontendUrl) {
         String loanId = variables.get("loanId");
         String recipientName = variables.get("name");
-        String reason = variables.getOrDefault("reason", "No specific reason provided.");
 
         String subject = "Loan Review Update - Action Required";
         String htmlBody = """
@@ -24,9 +23,8 @@ public class OfficerRejectionEmailStrategy implements EmailTemplateStrategy {
                 <h2 style="color: #e0a800;">Loan Review Update ⚠️</h2>
                 <p>Hello %s,</p>
                 <p>Your loan Task (ID: <b>%s</b>) was reviewed by an officer and requires updates.</p>
-                <p style="background-color: #f8f9fa; padding: 10px; border-left: 4px solid #e0a800;"><b>Reason:</b> %s</p>
             </div>
-            """.formatted(recipientName, loanId, reason);
+            """.formatted(recipientName, loanId);
 
         return new EmailContent(subject, htmlBody);
     }
