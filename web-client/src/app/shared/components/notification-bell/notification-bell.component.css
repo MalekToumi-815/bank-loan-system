@@ -126,29 +126,77 @@
   font-weight: 500;
 }
 
-/* ===== Dismiss Button ===== */
+/* ===== Dismiss Button with Countdown Ring ===== */
 .popup-dismiss {
   flex-shrink: 0;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   color: #64748b;
   cursor: pointer;
-  transition: all 0.15s ease;
-  margin-top: 2px;
+  transition: color 0.15s ease;
+  margin-top: 0;
+  padding: 0;
 }
 
 .popup-dismiss:hover {
-  background: rgba(239, 68, 68, 0.15);
   color: #fca5a5;
 }
 
-.popup-dismiss svg {
-  width: 14px;
-  height: 14px;
+/* The SVG ring fills the button exactly */
+.countdown-ring {
+  width: 32px;
+  height: 32px;
+  transform: rotate(-90deg); /* start arc from top */
+  overflow: visible;
 }
+
+/* Faint background circle */
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 3;
+}
+
+/* Draining arc — circumference of r=13: 2π×13 ≈ 81.68 */
+.ring-progress {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 81.68;
+  stroke-dashoffset: 0;
+  animation: ring-drain linear forwards;
+  /* animation-duration is bound from the template */
+}
+
+.popup-dismiss:hover .ring-progress {
+  stroke: #fca5a5;
+}
+
+@keyframes ring-drain {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 81.68; }
+}
+
+/* Numeric countdown centred over the ring */
+.countdown-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: inherit;
+  line-height: 1;
+  pointer-events: none;
+  /* nudge label down slightly to sit below the X arms */
+  margin-top: 10px;
+}
+

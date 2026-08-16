@@ -8,6 +8,8 @@ import { UserResponse } from '../../../features/auth/models/auth.model';
 import { UserRole } from '../../../core/models/user-role.enum';
 import { Notification } from '../../models/notification.model';
 
+const DISMISS_DURATION_S = 15;
+
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
@@ -41,10 +43,23 @@ import { Notification } from '../../models/notification.model';
             <p class="popup-message">{{ activeNotification.message }}</p>
             <span class="popup-timestamp">{{ formatTimestamp(activeNotification.timestamp) }}</span>
           </div>
+
+          <!-- Countdown dismiss button -->
           <button class="popup-dismiss" (click)="dismissPopup()" title="Dismiss">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg class="countdown-ring" viewBox="0 0 32 32">
+              <!-- Background track -->
+              <circle class="ring-track" cx="16" cy="16" r="13" />
+              <!-- Animated draining arc -->
+              <circle
+                class="ring-progress"
+                cx="16" cy="16" r="13"
+                [style.animation-duration]="dismissDuration + 's'"
+              />
+              <!-- X icon -->
+              <line x1="10" y1="10" x2="22" y2="22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="22" y1="10" x2="10" y2="22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
+            <span class="countdown-label">{{ countdown }}</span>
           </button>
         </div>
       }
@@ -60,12 +75,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private notifSub!: Subscription;
   private authSub!: Subscription;
-  private autoDismissTimer: ReturnType<typeof setTimeout> | null = null;
+  private autoDismissTimer: ReturnType<typeof setInterval> | null = null;
+
+  readonly dismissDuration = DISMISS_DURATION_S;
 
   unreadCount = 0;
   showPopup = false;
   activeNotification: Notification | null = null;
   currentUser: UserResponse | null = null;
+  countdown = DISMISS_DURATION_S;
 
   ngOnInit(): void {
     // Subscribe to incoming notifications
@@ -84,7 +102,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.currentUser = user;
       if (user) {
         this.notificationService.connect();
-        
+
         // Fetch initial unread count
         this.notificationService.getUnreadCount().subscribe({
           error: (err) => console.error('[NotificationBell] Failed to fetch unread count', err)
@@ -100,18 +118,24 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     this.clearAutoDismissTimer();
     this.activeNotification = notification;
     this.showPopup = true;
+    this.countdown = DISMISS_DURATION_S;
 
     // Trigger UI update for new notification
     this.cdr.markForCheck();
 
-    // Auto-dismiss after 10 seconds
-    this.autoDismissTimer = setTimeout(() => {
-      this.showPopup = false;
-      this.activeNotification = null;
+    // Tick every second — decrement countdown and auto-dismiss at 0
+    this.autoDismissTimer = setInterval(() => {
+      this.countdown--;
 
-      // Trigger UI update for timeout dismissal
+      if (this.countdown <= 0) {
+        this.clearAutoDismissTimer();
+        this.showPopup = false;
+        this.activeNotification = null;
+      }
+
+      // Trigger UI update each tick
       this.cdr.markForCheck();
-    }, 10000);
+    }, 1000);
   }
 
   dismissPopup(): void {
@@ -143,7 +167,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
     let targetUrl = '/dashboard';
     const role = this.currentUser?.role?.toUpperCase();
-    
+
     switch (role as UserRole) {
       case UserRole.CLIENT:
         targetUrl = '/dashboard/my-loans';
@@ -173,7 +197,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   private clearAutoDismissTimer(): void {
     if (this.autoDismissTimer) {
-      clearTimeout(this.autoDismissTimer);
+      clearInterval(this.autoDismissTimer);
       this.autoDismissTimer = null;
     }
   }
