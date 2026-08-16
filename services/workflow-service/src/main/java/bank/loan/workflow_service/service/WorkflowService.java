@@ -82,7 +82,7 @@ public class WorkflowService {
             }
 
             loanId = Long.valueOf(createResponse.get("loanId").toString());
-            type = String.valueOf(createResponse.get("type").toString());
+            type = request.type().name();
 
             // --- STEP B: Start the Flowable Process Instance ---
             Map<String, Object> variables = new HashMap<>();
