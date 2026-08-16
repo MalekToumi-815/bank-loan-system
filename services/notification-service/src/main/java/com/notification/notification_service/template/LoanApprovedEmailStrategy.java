@@ -19,15 +19,16 @@ public class LoanApprovedEmailStrategy implements EmailTemplateStrategy {
     public EmailContent buildEmail(Map<String, String> variables, String frontendUrl) {
         String loanId = variables.get("loanId");
         String recipientName = variables.get("name");
+        String type = variables.get("type");
 
         String subject = "Congratulations! Your Loan Has Been Approved";
         String htmlBody = """
             <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
                 <h2 style="color: #28a745;">Loan Approved 🎉</h2>
                 <p>Hello %s,</p>
-                <p>Great news! Your loan application (ID: <b>%s</b>) has been successfully approved.</p>
+                <p>Great news! Your %s application (ID: <b>%s</b>) has been successfully approved.</p>
             </div>
-            """.formatted(recipientName, loanId);
+            """.formatted(recipientName, type,loanId);
 
         return new EmailContent(subject, htmlBody);
     }

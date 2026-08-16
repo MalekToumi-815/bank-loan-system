@@ -7,6 +7,7 @@ import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 
 import bank.loan.workflow_service.service.NotificationService;
 import bank.loan.workflow_service.service.WorkflowService;
@@ -30,6 +31,9 @@ public class NotifyReceptionistDelegate implements JavaDelegate {
     public void execute(DelegateExecution execution) {
         Long receptionist = (Long) execution.getVariable("receptionist_id");
         Long loanId = (Long) execution.getVariable("loanId");
+        Long officer = null;
+        UserResponse officerUser = null;
+        String type = (String) execution.getVariable("loanType");
         UserResponse user = workflowService.fetchUser(receptionist);
         
         String message;
@@ -39,13 +43,17 @@ public class NotifyReceptionistDelegate implements JavaDelegate {
             message = "You have a new Task (LoanID: " + loanId + ")";
             mail = new EmailRequest(user.email(), EmailRequest.NotificationType.ASSIGNMENT, Map.of(
                         "loanId", loanId.toString(),
-                        "name", user.name()
+                        "name", user.name(),
+                        "type", type
                     ));
         } else {
+            officer = (Long) execution.getVariable("loan_officer_id");
+            officerUser = workflowService.fetchUser(officer);
             message = "A Loan officer has requested you to recheck your Task (LoanID: " + loanId + ")";
             mail = new EmailRequest(user.email(), EmailRequest.NotificationType.OFFICER_REJECTION, Map.of(
                         "loanId", loanId.toString(),
-                        "name", user.name()
+                        "name", user.name(),
+                        "officerName", officerUser.name()+" "+officerUser.surname()
                     ));
         }
 

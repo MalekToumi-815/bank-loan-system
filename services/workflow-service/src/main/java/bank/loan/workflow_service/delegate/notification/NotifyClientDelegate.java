@@ -29,6 +29,7 @@ public class NotifyClientDelegate implements JavaDelegate {
     public void execute(DelegateExecution execution) {
         Long Client = (Long) execution.getVariable("clientId");
         Long loanId = (Long) execution.getVariable("loanId");
+        String type = (String) execution.getVariable("loanType");
         Boolean isApprovedObj = (Boolean) execution.getVariable("is_approved");
         boolean isapproved = isApprovedObj != null && isApprovedObj;
         UserResponse user = workflowService.fetchUser(Client);
@@ -39,13 +40,15 @@ public class NotifyClientDelegate implements JavaDelegate {
             message = "Your loan application (LoanID: " + loanId + ") has been approved.";
             mail = new EmailRequest(user.email(), EmailRequest.NotificationType.LOAN_APPROVED, Map.of(
                         "loanId", loanId.toString(),
-                        "name", user.name()
+                        "name", user.name(),
+                        "type", type
                     ));
         } else {
             message = "Your loan application (LoanID: " + loanId + ") has been rejected.";
             mail = new EmailRequest(user.email(), EmailRequest.NotificationType.LOAN_REJECTED, Map.of(
                         "loanId", loanId.toString(),
-                        "name", user.name()
+                        "name", user.name(),
+                        "type", type
                     ));
         }
 

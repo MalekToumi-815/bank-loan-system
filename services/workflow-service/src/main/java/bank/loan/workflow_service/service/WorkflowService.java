@@ -33,6 +33,7 @@ import bank.loan.workflow_service.dto.ProcessInstanceDto;
 import bank.loan.workflow_service.dto.ReceptionistTask;
 import bank.loan.workflow_service.dto.PageResponse;
 import bank.loan.workflow_service.model.LoanStatus;
+import bank.loan.workflow_service.model.LoanType;
 import bank.loan.workflow_service.model.Role;
 import bank.loan.workflow_service.model.TaskKeys;
 
@@ -62,6 +63,7 @@ public class WorkflowService {
     public ResponseEntity<Map<String, Object>> startWorkflow(LoanRequest request, Long clientId) {
         Long loanId = null; 
         String processInstanceId = null;
+        String type;
 
         try {
             // --- STEP A: Ask credit-service to create the loan ---
@@ -80,11 +82,13 @@ public class WorkflowService {
             }
 
             loanId = Long.valueOf(createResponse.get("loanId").toString());
+            type = String.valueOf(createResponse.get("type").toString());
 
             // --- STEP B: Start the Flowable Process Instance ---
             Map<String, Object> variables = new HashMap<>();
             variables.put("loanId", loanId);
             variables.put("clientId", clientId);
+            variables.put("loanType", type);
 
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("creditWorkflow", variables);
             processInstanceId = processInstance.getId();

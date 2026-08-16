@@ -30,11 +30,13 @@ public class NotifyAdminDelegate implements JavaDelegate {
     public void execute(DelegateExecution execution) {
         Long Admin = (Long) execution.getVariable("bank_admin_id");
         Long loanId = (Long) execution.getVariable("loanId");
+        String type = (String) execution.getVariable("loanType");
         UserResponse user = workflowService.fetchUser(Admin);
         String message = "You have a new Task (LoanID: " + loanId + ")";
         EmailRequest mail = new EmailRequest(user.email(), EmailRequest.NotificationType.ASSIGNMENT, Map.of(
                         "loanId", loanId.toString(),
-                        "name", user.name()
+                        "name", user.name(),
+                        "type", type
                     ));
         notificationService.processNotification(Admin, loanId, message);
         rabbitTemplate.convertAndSend("email.queue", mail);
