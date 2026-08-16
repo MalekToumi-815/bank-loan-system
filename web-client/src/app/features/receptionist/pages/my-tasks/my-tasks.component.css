@@ -282,13 +282,21 @@
   font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
-  transition: opacity 0.18s, transform 0.12s;
+  transition: opacity 0.18s, transform 0.12s, background 0.25s;
   white-space: nowrap;
 }
 
-.my-tasks-complete-button:hover {
+.my-tasks-complete-button:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+/* Locked state once task is submitted */
+.my-tasks-complete-button:disabled {
+  background: linear-gradient(135deg, #10b981, #059669);
+  cursor: default;
+  opacity: 0.85;
+  transform: none;
 }
 
 .my-tasks-dialog-loading,

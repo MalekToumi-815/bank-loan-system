@@ -226,26 +226,6 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.txt'];
                     </li>
                   }
                 </ul>
-
-                @if (hasFilesToUpload()) {
-                  <button
-                    class="my-tasks-upload-btn"
-                    type="button"
-                    [disabled]="isUploading()"
-                    (click)="startUpload()"
-                  >
-                    @if (isUploading()) {
-                      <span class="my-tasks-upload-spinner"></span> Uploading…
-                    } @else {
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                      </svg>
-                      Upload {{ pendingCount() }} file{{ pendingCount() !== 1 ? 's' : '' }}
-                    }
-                  </button>
-                }
               }
             </div>
             <!-- ── End Document Upload Section ── -->
@@ -262,6 +242,7 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.txt'];
                 min="0"
                 step="0.01"
                 placeholder="e.g. 7.5"
+                [disabled]="taskCompleted()"
               />
             </div>
 
@@ -275,7 +256,18 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.txt'];
                 {{ dialogMessage() }}
               </div>
             }
-            <button class="my-tasks-complete-button" type="button" (click)="completeTask()">Complete task</button>
+            <button
+              class="my-tasks-complete-button"
+              type="button"
+              [disabled]="taskCompleted() || isUploading()"
+              (click)="completeTask()"
+            >
+              @if (taskCompleted()) {
+                ✓ Task completed
+              } @else {
+                Complete task
+              }
+            </button>
           </div>
 
         </div>
@@ -303,6 +295,7 @@ export class MyTasksComponent {
   // Upload state
   uploadFiles = signal<UploadFile[]>([]);
   isDragging = signal(false);
+  taskCompleted = signal(false);
 
   readonly acceptAttr = ACCEPTED_EXTENSIONS.join(',');
 
@@ -339,6 +332,7 @@ export class MyTasksComponent {
     this.loanDetails.set(null);
     this.uploadFiles.set([]);
     this.isDragging.set(false);
+    this.taskCompleted.set(false);
     this.loadLoan(task.loanId);
   }
 
@@ -470,14 +464,24 @@ export class MyTasksComponent {
 
     this.taskService.completeTask(task.taskId, rate).subscribe({
       next: () => {
-        this.setDialogMessage('Task completed successfully.', 'success');
-        this.dialogOpen.set(false);
-        this.selectedTask.set(null);
-        this.loanDetails.set(null);
-        this.uploadFiles.set([]);
+        // Lock the form — task is done, no re-submission allowed.
+        this.taskCompleted.set(true);
+        this.setDialogMessage('Task completed. Uploading documents…', 'success');
+
+        // Refresh task list in background.
         const assigneeId = this.assigneeId();
         if (assigneeId != null) {
           this.loadTasks(assigneeId);
+        }
+
+        // Kick off uploads for all pending files.
+        // Dialog stays open so the user can retry failed uploads.
+        const loanId = task.loanId;
+        const toUpload = this.uploadFiles().filter(f => f.status === 'pending');
+        if (toUpload.length === 0) {
+          this.setDialogMessage('Task completed successfully.', 'success');
+        } else {
+          toUpload.forEach(uf => this.uploadSingle(uf, loanId));
         }
       },
       error: () => {
