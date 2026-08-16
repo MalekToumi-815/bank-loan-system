@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, switchMap, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, switchMap, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   LoginRequest,
@@ -26,6 +26,10 @@ export class AuthService {
   private loginResponse: LoginResponse | null = null;
   private currentUserSubject = new BehaviorSubject<UserResponse | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+
+  /** Emits true once the startup hydration has fully settled (success or failure). */
+  private hydrationComplete$ = new BehaviorSubject<boolean>(false);
+  public authReady$ = this.hydrationComplete$.asObservable();
 
   constructor() {
     this.hydrateCurrentUserOnStartup();
@@ -71,16 +75,31 @@ export class AuthService {
     );
   }
 
+  /** Marks hydration as complete so guards can safely read currentUser$. */
+  private markHydrationComplete(): void {
+    this.hydrationComplete$.next(true);
+  }
+
   /**
-   * Re-hydrates current user state from localStorage token on app boot / refresh.
+   * Clears all auth state silently — no router navigation.
+   * Used during startup hydration so that the browser URL is preserved
+   * and public routes remain accessible to unauthenticated users.
    */
+  private clearSession(): void {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    this.loginResponse = null;
+    this.currentUserSubject.next(null);
+  }
+
   private hydrateCurrentUserOnStartup(): void {
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
       const decoded = this.decodeJwtPayload(accessToken);
       if (!decoded) {
         console.warn('Rehydration skipped: Access token structure is invalid.');
-        this.logout();
+        this.clearSession();
+        this.markHydrationComplete();
         return;
       }
 
@@ -96,13 +115,15 @@ export class AuthService {
 
       if (!rawUserId || isNaN(numericUserId)) {
         console.warn('Rehydration failed: No numeric User ID found in token claims. Claim value:', rawUserId);
-        this.logout();
+        this.clearSession();
+        this.markHydrationComplete();
         return;
       }
 
       this.refreshCurrentUser(numericUserId).subscribe({
-        next: (user) => {
-          console.log('Current user successfully rehydrated from access token:', user);
+        next: () => {
+          console.log('Current user successfully rehydrated from access token.');
+          this.markHydrationComplete();
         },
         error: (err) => {
           console.error('Rehydration failed: Unable to fetch user profile from backend.', err);
@@ -119,7 +140,9 @@ export class AuthService {
     const refreshToken = localStorage.getItem('refresh_token');
 
     if (!refreshToken) {
-      this.logout();
+      // No tokens at all — clear state silently, do NOT navigate.
+      this.clearSession();
+      this.markHydrationComplete();
       return;
     }
 
@@ -128,12 +151,15 @@ export class AuthService {
         switchMap(response => this.refreshCurrentUser(response.userId))
       )
       .subscribe({
-        next: (user) => {
-          console.log('Current user successfully rehydrated from refresh token:', user);
+        next: () => {
+          console.log('Current user successfully rehydrated from refresh token.');
+          this.markHydrationComplete();
         },
         error: (err) => {
           console.error('Rehydration failed: Refresh token request failed.', err);
-          this.logout();
+          // Refresh token is also invalid — clear silently, do NOT navigate.
+          this.clearSession();
+          this.markHydrationComplete();
         }
       });
   }
