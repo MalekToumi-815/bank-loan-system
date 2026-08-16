@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { Notification } from '../../../../shared/models/notification.model';
 import { Page } from '../../../../shared/models/page.model';
-import { Subscription } from 'rxjs';
+import { Subscription, take } from 'rxjs';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../../features/auth/services/auth.service';
+import { UserRole } from '../../../../core/models/user-role.enum';
 
 @Component({
   selector: 'app-notifications',
@@ -15,6 +17,7 @@ import { Router } from '@angular/router';
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
   private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   
@@ -95,13 +98,32 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  markAsRead(notification: Notification): void {
+  /**
+   * Navigates to the user's primary workspace page based on their role.
+   * Called when a notification row is clicked.
+   */
+  navigateToWorkspace(): void {
+    this.authService.currentUser$.pipe(take(1)).subscribe(user => {
+      let target = '/dashboard';
+      switch (user?.role as UserRole) {
+        case UserRole.CLIENT:            target = '/dashboard/my-loans';      break;
+        case UserRole.BANK_RECEPTIONIST: target = '/dashboard/my-tasks';      break;
+        case UserRole.LOAN_OFFICER:      target = '/dashboard/officer-tasks'; break;
+        case UserRole.BANK_ADMIN:        target = '/dashboard/admin-tasks';   break;
+      }
+      this.router.navigate([target]);
+    });
+  }
+
+  markAsRead(notification: Notification, event: MouseEvent): void {
+    event.stopPropagation();
     if (notification.read) return;
-    
+
     this.notificationService.markAsRead(notification.id).subscribe({
       next: () => {
         notification.read = true;
         this.notificationService.decrementUnreadCount();
+        this.showToast('Marked as read');
         this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to mark as read', err)

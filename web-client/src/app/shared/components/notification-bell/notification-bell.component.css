@@ -55,6 +55,7 @@
     transform: scale(0);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -99,6 +100,7 @@
     opacity: 0;
     transform: translateY(-8px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -153,7 +155,8 @@
 .countdown-ring {
   width: 32px;
   height: 32px;
-  transform: rotate(-90deg); /* start arc from top */
+  transform: rotate(-90deg);
+  /* start arc from top */
   overflow: visible;
 }
 
@@ -181,8 +184,13 @@
 }
 
 @keyframes ring-drain {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: 81.68; }
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: 81.68;
+  }
 }
 
 /* Numeric countdown centred over the ring */
@@ -190,13 +198,12 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(0deg);
+  transform: translate(-50%, -50%);
   font-size: 0.6rem;
   font-weight: 700;
   color: inherit;
   line-height: 1;
   pointer-events: none;
-  /* nudge label down slightly to sit below the X arms */
-  margin-top: 10px;
+  /* push the number well below the X arms */
+  margin-top: 25px;
 }
-
