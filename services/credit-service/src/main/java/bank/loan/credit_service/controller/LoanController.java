@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bank.loan.credit_service.dto.loan.LoanRequest;
 import bank.loan.credit_service.dto.loan.LoanResponse;
+import bank.loan.credit_service.dto.loan.LoanStatsResponse;
 import bank.loan.credit_service.dto.task.AdminTask;
 import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.LoanStatus;
@@ -158,5 +159,11 @@ public class LoanController {
             @RequestBody Map<String, String> payload) {
         String workflowTask = payload.get("workflowTask");
         return loanService.setWorkflowTask(id, workflowTask);
+    }
+
+    @GetMapping("/loans/stats")
+    public ResponseEntity<LoanStatsResponse> getLoanStats(
+            @RequestParam(required = false) Long clientId) {
+        return ResponseEntity.ok(loanService.getLoanStatistics(clientId));
     }
 }

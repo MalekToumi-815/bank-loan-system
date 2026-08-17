@@ -2,6 +2,7 @@ package bank.loan.credit_service.service;
 
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,8 @@ import org.springframework.web.client.RestClientException;
 
 import bank.loan.credit_service.dto.loan.LoanRequest;
 import bank.loan.credit_service.dto.loan.LoanResponse;
+import bank.loan.credit_service.dto.loan.LoanStatsResponse;
+import bank.loan.credit_service.dto.loan.StatusCountProjection;
 import bank.loan.credit_service.dto.task.AdminTask;
 import bank.loan.credit_service.dto.task.ReceptionistTask;
 import bank.loan.credit_service.model.Ammortisation;
@@ -481,5 +484,29 @@ public class LoanService {
         return ResponseEntity.ok(Map.of(
                 "status", "SUCCESS",
                 "message", "Workflow task set successfully"));
+    }
+
+    @Transactional
+    public LoanStatsResponse getLoanStatistics(Long clientId) {
+        List<StatusCountProjection> projections = loanRepository.countLoansGroupedByStatus(clientId);
+
+        // Pre-fill map with 0 for all statuses so the frontend receives complete data
+        Map<String, Long> statusCounts = new HashMap<>();
+        for (LoanStatus status : LoanStatus.values()) {
+            statusCounts.put(status.name(), 0L);
+        }
+
+        long total = 0;
+
+        // Populate actual DB counts
+        for (StatusCountProjection projection : projections) {
+            if (projection.getStatus() != null) {
+                long count = projection.getCount() != null ? projection.getCount() : 0L;
+                statusCounts.put(projection.getStatus(), count);
+                total += count;
+            }
+        }
+
+        return new LoanStatsResponse(total, statusCounts);
     }
 }
