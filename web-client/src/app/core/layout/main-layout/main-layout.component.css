@@ -2,8 +2,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-main, #0b1329);
-  color: var(--text-main, #f8fafc);
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
   font-family: var(--font-family, 'Inter', sans-serif);
 }
 
@@ -17,6 +17,6 @@
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
-  background-color: var(--bg-main, #0b1329);
+  background-color: var(--color-bg-main);
   height: calc(100vh - var(--header-height, 60px));
 }

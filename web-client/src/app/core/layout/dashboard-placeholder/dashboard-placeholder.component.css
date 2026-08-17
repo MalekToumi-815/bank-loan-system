@@ -1,7 +1,7 @@
 .dashboard-hero-card {
   padding: 2rem;
   border-radius: var(--radius-lg, 12px);
-  background: linear-gradient(135deg, #0f1c30, #1e293b);
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-text-primary));
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -12,12 +12,12 @@
 .hero-title {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--color-surface);
   margin-bottom: 0.5rem;
 }
 
 .hero-subtitle {
-  color: #94a3b8;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
 }
 
@@ -30,7 +30,7 @@
 .stat-card {
   padding: 1.5rem;
   border-radius: var(--radius-lg, 12px);
-  background-color: var(--brand-primary, #0f1c30);
+  background-color: var(--brand-primary, var(--color-primary-dark));
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -38,11 +38,11 @@
 .stat-card-title {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--color-bg-main);
   margin-bottom: 0.25rem;
 }
 
 .stat-card-desc {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
 }

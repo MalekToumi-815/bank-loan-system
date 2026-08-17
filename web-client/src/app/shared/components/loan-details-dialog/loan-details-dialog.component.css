@@ -15,9 +15,9 @@
 
 .loan-details-dialog {
   width: min(980px, 100%);
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 1rem;
-  border: 1px solid #d7dce3;
+  border: 1px solid color-mix(in srgb, var(--color-text-secondary) 30%, transparent);
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
   padding: 1rem;
   max-height: calc(100vh - 2rem);
@@ -34,7 +34,7 @@
 
 .loan-details-kicker {
   margin: 0 0 0.15rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.65rem;
@@ -43,14 +43,14 @@
 
 .loan-details-header h2 {
   margin: 0;
-  color: #0f172a;
+  color: var(--color-text-primary);
   font-size: 1.2rem;
 }
 
 .loan-details-close {
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 1.5rem;
   cursor: pointer;
 }
@@ -72,8 +72,8 @@
   gap: 1rem;
   padding: 0.82rem 0.9rem;
   border-radius: 0.8rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-text-secondary) 30%, transparent);
 }
 
 .loan-details-card-wide {
@@ -81,12 +81,12 @@
 }
 
 .loan-details-card span {
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 0.88rem;
 }
 
 .loan-details-card strong {
-  color: #0f172a;
+  color: var(--color-text-primary);
   font-size: 0.94rem;
 }
 

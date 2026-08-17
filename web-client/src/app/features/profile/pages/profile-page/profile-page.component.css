@@ -14,12 +14,12 @@
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--color-text-primary);
 }
 
 .profile-subtitle {
   margin: 0.35rem 0 0;
-  color: #475569;
+  color: var(--color-text-secondary);
   font-size: 1rem;
 }
 
@@ -30,8 +30,8 @@
 }
 
 .profile-panel {
-  background: #ffffff;
-  border: 1px solid #d7dce3;
+  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-text-secondary) 30%, transparent);
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
@@ -40,7 +40,7 @@
 .profile-panel h2,
 .profile-panel h3 {
   margin: 0 0 1rem;
-  color: #0f172a;
+  color: var(--color-text-primary);
 }
 
 .profile-form-grid {
@@ -62,22 +62,22 @@
 .profile-field label {
   font-size: 0.88rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--color-text-primary);
 }
 
 .profile-input {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-text-secondary);
   border-radius: 0.7rem;
   padding: 0.78rem 0.9rem;
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
   font-size: 0.98rem;
 }
 
 .profile-input:disabled {
-  background: #eef2f7;
-  color: #64748b;
+  background: var(--color-bg-main);
+  color: var(--color-text-secondary);
   cursor: not-allowed;
 }
 
@@ -98,15 +98,15 @@
 }
 
 .profile-button {
-  background: linear-gradient(135deg, #0f2d5a, #0a3f7c);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary-dark));
+  color: var(--color-surface);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
 }
 
 .profile-button-secondary {
-  background: #eff6ff;
-  color: #0f3f85;
-  border: 1px solid #bfdbfe;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary-dark);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .profile-account-list {
@@ -122,23 +122,23 @@
 }
 
 .profile-account-row span:first-child {
-  color: #475569;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
 .profile-account-row strong {
-  color: #0f172a;
+  color: var(--color-text-primary);
   font-size: 1rem;
 }
 
 .profile-message {
   margin-top: 0.9rem;
   font-size: 0.94rem;
-  color: #0f766e;
+  color: var(--color-primary);
 }
 
 .profile-message.error {
-  color: #b91c1c;
+  color: var(--color-accent-red);
 }
 
 @media (max-width: 960px) {
