@@ -67,7 +67,7 @@ public class WorkflowController {
         return workflowService.getProcessInstanceById(processInstanceId);
     }
 
-    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW')")
+    @PreAuthorize("hasAuthority('MANAGE-WORKFLOW') || hasAuthority('VIEW-TASK')")
     @GetMapping("/admin/tasks")
     public ResponseEntity<List<TaskResponseDto>> getTasksByKey(@RequestParam(required = false) String taskKey) {
         return workflowService.getTasksByKey(taskKey);
