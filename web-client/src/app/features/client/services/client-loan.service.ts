@@ -29,6 +29,17 @@ export interface NewLoanRequest {
   durationMonths: number;
 }
 
+export interface LoanStatsResponse {
+  total: number;
+  byStatus: {
+    PENDING?: number;
+    UNDER_REVIEW?: number;
+    ACCEPTED?: number;
+    REJECTED?: number;
+    [key: string]: number | undefined;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,6 +54,14 @@ export class ClientLoanService {
       .set('size', size.toString());
 
     return this.http.get<PaginatedLoansResponse>(`${this.baseUrl}credit/loans`, { params });
+  }
+
+  getLoanStats(clientId?: number): Observable<LoanStatsResponse> {
+    let params = new HttpParams();
+    if (clientId) {
+      params = params.set('clientId', clientId.toString());
+    }
+    return this.http.get<LoanStatsResponse>(`${this.baseUrl}credit/loans/stats`, { params });
   }
 
   startLoanRequest(payload: NewLoanRequest): Observable<{ message?: string; processInstanceId?: string }> {

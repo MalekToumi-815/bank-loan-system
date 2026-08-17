@@ -161,7 +161,7 @@ public class LoanController {
         return loanService.setWorkflowTask(id, workflowTask);
     }
 
-    @GetMapping("/loans/stats")
+    @GetMapping("/stats")
     public ResponseEntity<LoanStatsResponse> getLoanStats(
             @RequestParam(required = false) Long clientId) {
         return ResponseEntity.ok(loanService.getLoanStatistics(clientId));

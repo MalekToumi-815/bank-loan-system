@@ -1,1 +1,148 @@
-<p>client-dashboard works!</p>
+<div class="cd-wrapper">
+
+  <!-- Header -->
+  <div class="cd-header">
+    <div>
+      <h2 class="cd-welcome">Welcome back, {{ currentUser()?.name || 'User' }}</h2>
+      <p class="cd-subtitle">Track your credit requests and manage active loans.</p>
+    </div>
+    <button routerLink="/dashboard/new-request" class="cd-new-btn">
+      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      </svg>
+      New request
+    </button>
+  </div>
+
+  <!-- Stats Grid -->
+  @if (!isLoadingStats() && stats()) {
+  <div class="cd-stats-grid">
+
+    <div class="cd-stat-card">
+      <div class="cd-stat-info">
+        <p class="cd-stat-label">Total requests</p>
+        <h3 class="cd-stat-value">{{ stats()!.total || 0 }}</h3>
+      </div>
+      <div class="cd-stat-icon cd-icon-gray">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="cd-stat-card">
+      <div class="cd-stat-info">
+        <p class="cd-stat-label">Pending</p>
+        <h3 class="cd-stat-value">{{ stats()!.byStatus?.PENDING || 0 }}</h3>
+      </div>
+      <div class="cd-stat-icon cd-icon-orange">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="cd-stat-card">
+      <div class="cd-stat-info">
+        <p class="cd-stat-label">Under review</p>
+        <h3 class="cd-stat-value">{{ stats()!.byStatus?.UNDER_REVIEW || 0 }}</h3>
+      </div>
+      <div class="cd-stat-icon cd-icon-cyan">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="cd-stat-card">
+      <div class="cd-stat-info">
+        <p class="cd-stat-label">Accepted</p>
+        <h3 class="cd-stat-value">{{ stats()!.byStatus?.ACCEPTED || 0 }}</h3>
+      </div>
+      <div class="cd-stat-icon cd-icon-green">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </div>
+
+  </div>
+  } @else {
+  <div class="cd-stats-skeleton">
+    <div class="cd-skeleton-card"></div>
+    <div class="cd-skeleton-card"></div>
+    <div class="cd-skeleton-card"></div>
+    <div class="cd-skeleton-card"></div>
+  </div>
+  }
+
+  <!-- Main Content Row -->
+  <div class="cd-content-row">
+
+    <!-- Recent Requests -->
+    <div class="cd-recent-card">
+      <div class="cd-recent-header">
+        <h3 class="cd-recent-title">Recent requests</h3>
+        <a routerLink="/dashboard/my-loans" class="cd-view-all">View all</a>
+      </div>
+
+      @if (isLoadingLoans()) {
+      <p class="cd-loading-text">Loading recent requests...</p>
+      } @else if (recentLoans().length === 0) {
+      <p class="cd-empty-text">No recent requests found.</p>
+      } @else {
+      <div class="cd-loan-list">
+        @for (loan of recentLoans(); track loan.id) {
+        <div class="cd-loan-row">
+          <div class="cd-loan-info">
+            <div class="cd-loan-title-row">
+              <span class="cd-loan-id">L-{{ loan.id }}</span>
+              <span class="cd-dot">•</span>
+              <span class="cd-loan-type">{{ formatLoanType(loan.type) }}</span>
+            </div>
+            <div class="cd-loan-meta">
+              <span>{{ loan.submissionDate | date:'dd MMM yyyy' }}</span>
+              <span class="cd-dot">•</span>
+              <span>{{ loan.amount | number }} DT</span>
+            </div>
+          </div>
+          @if (loan.status === 'ACCEPTED') {
+          <span class="cd-badge cd-badge-green">Accepted</span>
+          } @else if (loan.status === 'UNDER_REVIEW') {
+          <span class="cd-badge cd-badge-cyan">Under review</span>
+          } @else if (loan.status === 'REJECTED') {
+          <span class="cd-badge cd-badge-red">Rejected</span>
+          } @else {
+          <span class="cd-badge cd-badge-orange">Pending</span>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Blank Widget Slot -->
+    <div class="cd-widget-slot">
+      <p class="cd-widget-placeholder">Reserved for future widget</p>
+    </div>
+
+  </div>
+
+  <!-- Rejection Alert -->
+  @if (stats()?.byStatus?.REJECTED && stats()!.byStatus!.REJECTED! > 0) {
+  <div class="cd-alert-rejection">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <p>
+      {{ stats()!.byStatus!.REJECTED }} request{{ stats()!.byStatus!.REJECTED! > 1 ? 's' : '' }} rejected.
+      Review the reason in your request details.
+    </p>
+  </div>
+  }
+
+</div>
