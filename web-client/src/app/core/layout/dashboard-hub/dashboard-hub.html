@@ -1,0 +1,19 @@
+<div class="dashboard-hub-wrapper">
+  @switch (currentUser()?.role) {
+    @case (UserRole.CLIENT) {
+      <app-client-dashboard />
+    }
+    @case (UserRole.BANK_ADMIN) {
+      <app-admin-dashboard />
+    }
+    @case (UserRole.LOAN_OFFICER) {
+      <app-officer-dashboard />
+    }
+    @case (UserRole.BANK_RECEPTIONIST) {
+      <app-receptionist-dashboard />
+    }
+    @default {
+      <app-dashboard-placeholder />
+    }
+  }
+</div>

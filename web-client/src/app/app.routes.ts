@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
 import { DashboardPlaceholderComponent } from './core/layout/dashboard-placeholder/dashboard-placeholder.component';
+import { DashboardHub } from './core/layout/dashboard-hub/dashboard-hub';
 import { MyLoansComponent } from './features/client/pages/my-loans/my-loans.component';
 import { NewRequestComponent } from './features/client/pages/new-request/new-request.component';
 import { AdminMyTasksComponent } from './features/admin/pages/my-tasks/my-tasks.component';
@@ -22,7 +23,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       // ── Open to any authenticated user ─────────────────────────────────────
-      { path: '',              component: DashboardPlaceholderComponent },
+      { path: '',              component: DashboardHub },
       { path: 'profile',       component: ProfilePageComponent },
       { path: 'notifications', component: NotificationsComponent },
 
