@@ -1,1 +1,240 @@
-<p>receptionist-dashboard works!</p>
+<div class="rd-wrapper">
+
+  <!-- Header -->
+  <header class="rd-header">
+    <div class="rd-header-text">
+      <div class="rd-badge-role">Front Desk Operations</div>
+      <h1 class="rd-title">Intake & Documentation Analytics</h1>
+      <p class="rd-subtitle">Monitor operational throughput, dossier quality, and front-desk processing velocity.</p>
+    </div>
+    <div class="rd-header-actions">
+      <button class="rd-refresh-btn" (click)="refresh()" [disabled]="isRefreshing()" title="Refresh Dashboard">
+        <svg class="rd-refresh-icon" [class.spinning]="isRefreshing()" width="18" height="18" fill="none"
+          stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>{{ isRefreshing() ? 'Refreshing...' : 'Refresh Data' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Error Alert -->
+  @if (errorMessage()) {
+  <div class="rd-alert-error">
+    <div class="rd-alert-icon">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <div class="rd-alert-content">
+      <p class="rd-alert-title">Connection Error</p>
+      <p class="rd-alert-text">{{ errorMessage() }}</p>
+    </div>
+    <button class="rd-alert-retry" (click)="loadDashboardStats()">Retry</button>
+  </div>
+  }
+
+  <!-- Loading Skeletons -->
+  @if (isLoading()) {
+  <div class="rd-skeleton-grid">
+    <div class="rd-skeleton-card"></div>
+    <div class="rd-skeleton-card"></div>
+    <div class="rd-skeleton-card"></div>
+    <div class="rd-skeleton-card"></div>
+  </div>
+  <div class="rd-skeleton-body-grid">
+    <div class="rd-skeleton-panel"></div>
+    <div class="rd-skeleton-panel"></div>
+  </div>
+  }
+
+  <!-- Dashboard Main Content -->
+  @if (!isLoading() && stats()) {
+
+  <!-- 1. KPI Grid -->
+  <section class="rd-kpi-grid">
+
+    <!-- KPI 1: Intake Throughput -->
+    <div class="rd-kpi-card rd-kpi-throughput">
+      <div class="rd-kpi-header">
+        <span class="rd-kpi-label">Total Processed</span>
+        <div class="rd-kpi-icon-wrap icon-blue">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="rd-kpi-value-wrap">
+        <h2 class="rd-kpi-value">{{ stats()!.totalProcessed | number }} <span class="rd-unit">Files</span></h2>
+      </div>
+      <div class="rd-kpi-footer">
+        <span class="rd-pill-badge badge-blue">
+          Intake Desk Output
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 2: Current Assigned Backlog -->
+    <div class="rd-kpi-card rd-kpi-backlog">
+      <div class="rd-kpi-header">
+        <span class="rd-kpi-label">Active Backlog</span>
+        <div class="rd-kpi-icon-wrap icon-amber">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="rd-kpi-value-wrap">
+        <h2 class="rd-kpi-value">{{ stats()!.activeBacklog | number }} <span class="rd-unit">Pending</span></h2>
+      </div>
+      <div class="rd-kpi-footer">
+        <span class="rd-pill-badge badge-amber">
+          Awaiting Action
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 3: Average Intake Turnaround -->
+    <div class="rd-kpi-card rd-kpi-speed">
+      <div class="rd-kpi-header">
+        <span class="rd-kpi-label">Avg Turnaround</span>
+        <div class="rd-kpi-icon-wrap icon-purple">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+      </div>
+      <div class="rd-kpi-value-wrap">
+        <h2 class="rd-kpi-value">{{ stats()!.avgIntakeTurnaroundHours | number:'1.1-1' }} <span
+            class="rd-unit">Hours</span></h2>
+      </div>
+      <div class="rd-kpi-footer">
+        <span class="rd-pill-badge badge-purple">
+          Processing Velocity
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 4: Returned / Kicked Back -->
+    <div class="rd-kpi-card rd-kpi-returns">
+      <div class="rd-kpi-header">
+        <span class="rd-kpi-label">Returned by Officer</span>
+        <div class="rd-kpi-icon-wrap icon-red">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          </svg>
+        </div>
+      </div>
+      <div class="rd-kpi-value-wrap">
+        <h2 class="rd-kpi-value">{{ stats()!.returnedCount | number }} <span class="rd-unit">Returns</span></h2>
+      </div>
+      <div class="rd-kpi-footer">
+        <span class="rd-pill-badge badge-red">
+          Needs Corrections
+        </span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2. Main Analytics Body -->
+  <div class="rd-grid-main">
+
+    <!-- Widget 1: First-Pass Quality (Donut) -->
+    <div class="rd-panel rd-quality-panel">
+      <div class="rd-panel-header">
+        <div class="rd-panel-title-wrap">
+          <h3 class="rd-panel-title">First-Pass Quality</h3>
+          <p class="rd-panel-desc">Percentage of dossiers directly validated by officers without returns</p>
+        </div>
+      </div>
+
+      <div class="rd-donut-container">
+        <div class="rd-donut-wrapper">
+          <svg class="rd-donut-svg" viewBox="0 0 100 100">
+            <!-- Background circle (representing failures/returns) -->
+            <circle class="rd-donut-bg" cx="50" cy="50" [attr.r]="donutRadius" fill="none" stroke-width="10"></circle>
+            <!-- Foreground circle (representing success) -->
+            <circle class="rd-donut-fill" cx="50" cy="50" [attr.r]="donutRadius" fill="none" stroke-width="10"
+              [style.stroke-dasharray]="donutCircumference"
+              [style.stroke-dashoffset]="getDonutOffset(stats()!.firstPassRatePercent)">
+            </circle>
+          </svg>
+          <div class="rd-donut-center">
+            <span class="rd-donut-percent">{{ stats()!.firstPassRatePercent | number:'1.0-0' }}%</span>
+            <span class="rd-donut-label">Valid Rate</span>
+          </div>
+        </div>
+
+        <div class="rd-donut-legend">
+          <div class="rd-legend-item">
+            <div class="rd-legend-dot dot-success"></div>
+            <div class="rd-legend-info">
+              <span class="rd-legend-title">Valid (First Pass)</span>
+              <span class="rd-legend-value">{{ stats()!.firstPassRatePercent | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+          <div class="rd-legend-item">
+            <div class="rd-legend-dot dot-error"></div>
+            <div class="rd-legend-info">
+              <span class="rd-legend-title">Returned/Invalid</span>
+              <span class="rd-legend-value">{{ (100 - stats()!.firstPassRatePercent) | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Widget 2: Loan Type Distribution -->
+    <div class="rd-panel rd-distribution-panel">
+      <div class="rd-panel-header">
+        <div class="rd-panel-title-wrap">
+          <h3 class="rd-panel-title">Intake Demand by Category</h3>
+          <p class="rd-panel-desc">Volume and requested capital channeled through the front desk</p>
+        </div>
+      </div>
+
+      @if (stats()!.byLoanType.length === 0) {
+      <div class="rd-empty-state">
+        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <p class="rd-empty-title">No Data Available</p>
+        <p class="rd-empty-desc">No applications have been processed yet.</p>
+      </div>
+      } @else {
+      <div class="rd-bar-list">
+        @for (item of stats()!.byLoanType; track item.type; let idx = $index) {
+        <div class="rd-bar-row" [style.--anim-delay]="idx * 0.1 + 's'">
+          <div class="rd-bar-info">
+            <div class="rd-bar-left">
+              <div class="rd-type-indicator" [class]="getTypeBadgeClass(item.type)"></div>
+              <span class="rd-bar-name">{{ formatLoanType(item.type) }}</span>
+              <span class="rd-bar-count">({{ item.count }} files)</span>
+            </div>
+            <span class="rd-bar-amount">{{ item.totalAmount | number:'1.0-0' }} DT</span>
+          </div>
+          <div class="rd-bar-track">
+            <div class="rd-bar-fill" [class]="getTypeBadgeClass(item.type)"
+              [style.width.%]="getTypeBarPercent(item.totalAmount)"></div>
+          </div>
+        </div>
+        }
+      </div>
+      <div class="rd-total-summary">
+        <span class="rd-total-label">Total Capital Intake:</span>
+        <span class="rd-total-value">{{ totalCapitalChanneled() | number:'1.0-0' }} DT</span>
+      </div>
+      }
+    </div>
+
+  </div>
+  }
+
+</div>
