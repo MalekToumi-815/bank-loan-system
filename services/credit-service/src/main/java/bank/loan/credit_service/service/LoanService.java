@@ -91,6 +91,7 @@ public class LoanService {
                 .map(loan -> {
                     loan.setInterestRate(task.interestRate());
                     loan.setStatus(task.status());
+                    loan.setIntakeCompletedDate(new Date());
                     return loanRepository.save(loan);
                 })
                 .orElse(null);
@@ -103,6 +104,7 @@ public class LoanService {
                     loan.setFinalDecision(task.finalDecision());
                     loan.setDurationMonths(task.durationMonths());
                     loan.setStartDate(task.startDate());
+                    loan.setDecisionDate(new Date());
                     return loanRepository.save(loan);
                 })
                 .orElse(null);
@@ -200,6 +202,9 @@ public class LoanService {
         String recommendation = payload.get("recommendation");
         RiskAssessment riskAssessment = new RiskAssessment(loan, riskScore, recommendation);
         riskAssessmentRepository.save(riskAssessment);
+
+        loan.setAssessmentCompletedDate(new Date());
+        loanRepository.save(loan);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
@@ -457,7 +462,10 @@ public class LoanService {
         }
 
         switch (role) {
-            case Role.LOAN_OFFICER -> loan.setOfficerrejectionReason(reason);
+            case Role.LOAN_OFFICER -> {
+                loan.setOfficerrejectionReason(reason);
+                loan.setRejectionCount(loan.getRejectionCount() + 1);
+            }
             case Role.BANK_ADMIN -> loan.setAdminrejectionReason(reason);
             default -> {
                 return ResponseEntity.badRequest()

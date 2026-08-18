@@ -6,6 +6,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 @Entity
+@Table(name = "loan", indexes = {
+    @Index(name = "idx_loan_receptionist_status", columnList = "receptionistId, status"),
+    @Index(name = "idx_loan_officer_status", columnList = "creditOfficerId, status"),
+    @Index(name = "idx_loan_admin_status", columnList = "bankAdminId, status"),
+    @Index(name = "idx_loan_workflow_task", columnList = "workflowTask"),
+    @Index(name = "idx_loan_submission_date", columnList = "submissionDate")
+})
 public class Loan {
 
     @Id
@@ -20,6 +27,10 @@ public class Loan {
 
     private Date submissionDate;
     private Date startDate;
+    private Date intakeCompletedDate;
+    private Date assessmentCompletedDate;
+    private Date decisionDate;
+    private int rejectionCount = 0;
 
     private float amount;
 
@@ -234,5 +245,37 @@ public class Loan {
 
     public void setNotifications(java.util.List<Notification> notifications) {
         this.notifications = notifications;
+    }
+
+    public Date getIntakeCompletedDate() {
+        return intakeCompletedDate;
+    }
+
+    public void setIntakeCompletedDate(Date intakeCompletedDate) {
+        this.intakeCompletedDate = intakeCompletedDate;
+    }
+
+    public Date getAssessmentCompletedDate() {
+        return assessmentCompletedDate;
+    }
+
+    public void setAssessmentCompletedDate(Date assessmentCompletedDate) {
+        this.assessmentCompletedDate = assessmentCompletedDate;
+    }
+
+    public Date getDecisionDate() {
+        return decisionDate;
+    }
+
+    public void setDecisionDate(Date decisionDate) {
+        this.decisionDate = decisionDate;
+    }
+
+    public int getRejectionCount() {
+        return rejectionCount;
+    }
+
+    public void setRejectionCount(int rejectionCount) {
+        this.rejectionCount = rejectionCount;
     }
 }
