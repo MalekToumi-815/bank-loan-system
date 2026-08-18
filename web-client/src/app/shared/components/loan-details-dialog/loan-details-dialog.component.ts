@@ -20,46 +20,60 @@ import { ClientLoan } from '../../../features/client/models/client-loan.model';
           </div>
 
           <div class="loan-details-grid" [class.compact]="compact">
-            <div class="loan-details-card">
-              <span>Loan ID</span>
-              <strong>{{ loan?.id ?? '—' }}</strong>
-            </div>
-            <div class="loan-details-card">
-              <span>Type</span>
-              <strong>{{ loanTypeLabel(loan?.type ?? null) }}</strong>
-            </div>
-            <div class="loan-details-card">
-              <span>Amount</span>
-              <strong>{{ formatAmount(loan?.amount ?? null) }}</strong>
-            </div>
-            <div class="loan-details-card">
-              <span>Duration</span>
-              <strong>{{ formatDuration(loan?.durationMonths ?? null) }}</strong>
-            </div>
-            <div class="loan-details-card">
-              <span>Interest Rate</span>
-              <strong>{{ formatPercent(loan?.interestRate ?? null) }}</strong>
-            </div>
-            <div class="loan-details-card">
-              <span>Status</span>
-              <strong>{{ statusLabel(loan?.status ?? null) }}</strong>
-            </div>
-            <div class="loan-details-card loan-details-card-wide">
-              <span>Decision</span>
-              <strong>{{ loan?.finalDecision || '—' }}</strong>
-            </div>
+            @if (loan?.id) {
+              <div class="loan-details-card">
+                <span>Loan ID</span>
+                <strong>{{ loan?.id }}</strong>
+              </div>
+            }
+            @if (loan?.type) {
+              <div class="loan-details-card">
+                <span>Type</span>
+                <strong>{{ loanTypeLabel(loan?.type ?? null) }}</strong>
+              </div>
+            }
+            @if (loan?.amount) {
+              <div class="loan-details-card">
+                <span>Amount</span>
+                <strong>{{ formatAmount(loan?.amount ?? null) }}</strong>
+              </div>
+            }
+            @if (loan?.durationMonths) {
+              <div class="loan-details-card">
+                <span>Duration</span>
+                <strong>{{ formatDuration(loan?.durationMonths ?? null) }}</strong>
+              </div>
+            }
+            @if (loan?.interestRate) {
+              <div class="loan-details-card">
+                <span>Interest Rate</span>
+                <strong>{{ formatPercent(loan?.interestRate ?? null) }}</strong>
+              </div>
+            }
+            @if (loan?.status) {
+              <div class="loan-details-card">
+                <span>Status</span>
+                <strong>{{ statusLabel(loan?.status ?? null) }}</strong>
+              </div>
+            }
+            @if (loan?.finalDecision) {
+              <div class="loan-details-card loan-details-card-wide">
+                <span>Decision</span>
+                <strong>{{ loan?.finalDecision }}</strong>
+              </div>
+            }
 
-            @if (isApprovedStatus(loan?.status ?? null)) {
+            @if (isApprovedStatus(loan?.status ?? null) && loan?.startDate) {
               <div class="loan-details-card loan-details-card-wide">
                 <span>Start date</span>
                 <strong>{{ formatDateValue(loan?.startDate ?? null) }}</strong>
               </div>
             }
 
-            @if (isRejectedStatus(loan?.status ?? null)) {
+            @if (isRejectedStatus(loan?.status ?? null) && loan?.AdminrejectionReason) {
               <div class="loan-details-card loan-details-card-wide">
                 <span>Rejection reason</span>
-                <strong>{{ loan?.AdminrejectionReason || '—' }}</strong>
+                <strong>{{ loan?.AdminrejectionReason }}</strong>
               </div>
             }
           </div>

@@ -86,7 +86,7 @@ import { AmortisationComponent } from '../../../../shared/components/amortisatio
                     @if (isApproved(loan) || isRejected(loan)) {
                       <button class="my-loans-details-button" type="button" (click)="openLoanDialog(loan)">Details</button>
                     }
-                    @if (isApproved(loan)) {
+                    @if (loan.workflowTask === 'COMPLETED' && isApproved(loan)) {
                       <button class="my-loans-amort-button" type="button" (click)="openAmortisation(loan)">Amortisation</button>
                     }
                   </td>
