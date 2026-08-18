@@ -9,7 +9,7 @@ import { UserResponse } from '../../../auth/models/auth.model';
 @Component({
   selector: 'app-receptionist-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './receptionist-dashboard.html',
   styleUrl: './receptionist-dashboard.css',
 })

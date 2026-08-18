@@ -1,1 +1,243 @@
-<p>officer-dashboard works!</p>
+<div class="od-wrapper">
+
+  <!-- Header -->
+  <header class="od-header">
+    <div class="od-header-text">
+      <div class="od-badge-role">Risk Assessment Operations</div>
+      <h1 class="od-title">Validation & Credit Scoring Analytics</h1>
+      <p class="od-subtitle">Monitor dossier compliance, risk profiling, and evaluation turnaround efficiency.</p>
+    </div>
+    <div class="od-header-actions">
+      <button class="od-refresh-btn" (click)="refresh()" [disabled]="isRefreshing()" title="Refresh Dashboard">
+        <svg class="od-refresh-icon" [class.spinning]="isRefreshing()" width="18" height="18" fill="none"
+          stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>{{ isRefreshing() ? 'Refreshing...' : 'Refresh Data' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Error Alert -->
+  @if (errorMessage()) {
+  <div class="od-alert-error">
+    <div class="od-alert-icon">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <div class="od-alert-content">
+      <p class="od-alert-title">Connection Error</p>
+      <p class="od-alert-text">{{ errorMessage() }}</p>
+    </div>
+    <button class="od-alert-retry" (click)="loadDashboardStats()">Retry</button>
+  </div>
+  }
+
+  <!-- Loading Skeletons -->
+  @if (isLoading()) {
+  <div class="od-skeleton-grid">
+    <div class="od-skeleton-card"></div>
+    <div class="od-skeleton-card"></div>
+    <div class="od-skeleton-card"></div>
+    <div class="od-skeleton-card"></div>
+  </div>
+  <div class="od-skeleton-body-grid">
+    <div class="od-skeleton-panel"></div>
+    <div class="od-skeleton-panel"></div>
+  </div>
+  }
+
+  <!-- Dashboard Main Content -->
+  @if (!isLoading() && stats()) {
+
+  <!-- 1. KPI Grid -->
+  <section class="od-kpi-grid">
+
+    <!-- KPI 1: Total Evaluated -->
+    <div class="od-kpi-card od-kpi-evaluated">
+      <div class="od-kpi-header">
+        <span class="od-kpi-label">Total Evaluated</span>
+        <div class="od-kpi-icon-wrap icon-blue">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="od-kpi-value-wrap">
+        <h2 class="od-kpi-value">{{ stats()!.totalEvaluated | number }} <span class="od-unit">Files</span></h2>
+      </div>
+      <div class="od-kpi-footer">
+        <span class="od-pill-badge badge-blue">
+          Risk Assessments Output
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 2: Current Assigned Backlog -->
+    <div class="od-kpi-card od-kpi-backlog">
+      <div class="od-kpi-header">
+        <span class="od-kpi-label">Active Queue Load</span>
+        <div class="od-kpi-icon-wrap icon-amber">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="od-kpi-value-wrap">
+        <h2 class="od-kpi-value">{{ activeQueueLoad() | number }} <span class="od-unit">Pending</span></h2>
+      </div>
+      <div class="od-kpi-footer">
+        <span class="od-pill-badge badge-amber">
+          {{ stats()!.queue.pendingValidation }} Validations, {{ stats()!.queue.pendingRecommendation }} Recommendations
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 3: Average Turnaround Time -->
+    <div class="od-kpi-card od-kpi-speed">
+      <div class="od-kpi-header">
+        <span class="od-kpi-label">Mean Assessment Duration</span>
+        <div class="od-kpi-icon-wrap icon-purple">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+      </div>
+      <div class="od-kpi-value-wrap">
+        <h2 class="od-kpi-value">{{ stats()!.avgAssessmentHours | number:'1.1-1' }} <span class="od-unit">Hours</span>
+        </h2>
+      </div>
+      <div class="od-kpi-footer">
+        <span class="od-pill-badge badge-purple">
+          Evaluation Efficiency
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 4: Returned for Revision -->
+    <div class="od-kpi-card od-kpi-returns">
+      <div class="od-kpi-header">
+        <span class="od-kpi-label">Returned for Revision</span>
+        <div class="od-kpi-icon-wrap icon-red">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          </svg>
+        </div>
+      </div>
+      <div class="od-kpi-value-wrap">
+        <h2 class="od-kpi-value">{{ stats()!.returnedForRevisionCount | number }} <span class="od-unit">Returns</span>
+        </h2>
+      </div>
+      <div class="od-kpi-footer">
+        <span class="od-pill-badge badge-red">
+          Dossier Deficiencies
+        </span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2. Main Analytics Body -->
+  <div class="od-grid-main">
+
+    <!-- Widget 1: Document Validation vs. Return Ratios (Donut) -->
+    <div class="od-panel od-quality-panel">
+      <div class="od-panel-header">
+        <div class="od-panel-title-wrap">
+          <h3 class="od-panel-title">Document Validation Rate</h3>
+          <p class="od-panel-desc">Ratio of validated files versus invalid/returned applications</p>
+        </div>
+      </div>
+
+      <div class="od-donut-container">
+        <div class="od-donut-wrapper">
+          <svg class="od-donut-svg" viewBox="0 0 100 100">
+            <!-- Background circle (representing failures/returns) -->
+            <circle class="od-donut-bg" cx="50" cy="50" [attr.r]="donutRadius" fill="none" stroke-width="10"></circle>
+            <!-- Foreground circle (representing success) -->
+            <circle class="od-donut-fill" cx="50" cy="50" [attr.r]="donutRadius" fill="none" stroke-width="10"
+              [style.stroke-dasharray]="donutCircumference"
+              [style.stroke-dashoffset]="getDonutOffset(stats()!.validationRatePercent)">
+            </circle>
+          </svg>
+          <div class="od-donut-center">
+            <span class="od-donut-percent">{{ stats()!.validationRatePercent | number:'1.0-0' }}%</span>
+            <span class="od-donut-label">Validated</span>
+          </div>
+        </div>
+
+        <div class="od-donut-legend">
+          <div class="od-legend-item">
+            <div class="od-legend-dot dot-success"></div>
+            <div class="od-legend-info">
+              <span class="od-legend-title">Valid (Approved)</span>
+              <span class="od-legend-value">{{ stats()!.validationRatePercent | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+          <div class="od-legend-item">
+            <div class="od-legend-dot dot-error"></div>
+            <div class="od-legend-info">
+              <span class="od-legend-title">Returned (Invalid)</span>
+              <span class="od-legend-value">{{ (100 - stats()!.validationRatePercent) | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Widget 2: Risk Profile Distribution (Bar Chart) -->
+    <div class="od-panel od-distribution-panel">
+      <div class="od-panel-header">
+        <div class="od-panel-title-wrap">
+          <h3 class="od-panel-title">Credit Risk Evaluation Breakdown</h3>
+          <p class="od-panel-desc">Distribution of assigned risk scores and correlated capital exposure</p>
+        </div>
+      </div>
+
+      @if (stats()!.riskDistribution.length === 0) {
+      <div class="od-empty-state">
+        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <p class="od-empty-title">No Risk Data Available</p>
+        <p class="od-empty-desc">No applications have been assigned a risk score yet.</p>
+      </div>
+      } @else {
+      <div class="od-bar-list">
+        @for (item of stats()!.riskDistribution; track item.riskScore; let idx = $index) {
+        <div class="od-bar-row" [style.--anim-delay]="idx * 0.1 + 's'">
+          <div class="od-bar-info">
+            <div class="od-bar-left">
+              <div class="od-type-indicator" [class]="getRiskBadgeClass(item.riskScore)"></div>
+              <span class="od-bar-name">{{ formatRiskType(item.riskScore) }} Risk</span>
+              <span class="od-bar-count">({{ item.count }} files)</span>
+            </div>
+            <span class="od-bar-amount">Avg: {{ item.avgAmount | number:'1.0-0' }} DT</span>
+          </div>
+          <div class="od-bar-track">
+            <div class="od-bar-fill" [class]="getRiskBadgeClass(item.riskScore)"
+              [style.width.%]="getRiskBarPercent(item.count)"></div>
+          </div>
+        </div>
+        }
+      </div>
+      <div class="od-total-summary">
+        <span class="od-total-label">Total Evaluated For Risk:</span>
+        <span class="od-total-value">{{ totalRiskEvaluated() | number:'1.0-0' }} Files</span>
+      </div>
+      }
+    </div>
+
+  </div>
+
+
+  }
+
+</div>
