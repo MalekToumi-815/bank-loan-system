@@ -1,1 +1,267 @@
-<p>admin-dashboard works!</p>
+<div class="ad-wrapper">
+
+  <!-- Header -->
+  <header class="ad-header">
+    <div class="ad-header-text">
+      <div class="ad-badge-role">Executive Management</div>
+      <h1 class="ad-title">Credit Portfolio & Pipeline Analytics</h1>
+      <p class="ad-subtitle">Real-time financial exposure, department throughput, and executive decision intelligence.
+      </p>
+    </div>
+    <div class="ad-header-actions">
+      <button class="ad-refresh-btn" (click)="refresh()" [disabled]="isRefreshing()" title="Refresh Dashboard">
+        <svg class="ad-refresh-icon" [class.spinning]="isRefreshing()" width="18" height="18" fill="none"
+          stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>{{ isRefreshing() ? 'Refreshing...' : 'Refresh Data' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Error Alert -->
+  @if (errorMessage()) {
+  <div class="ad-alert-error">
+    <div class="ad-alert-icon">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <div class="ad-alert-content">
+      <p class="ad-alert-title">Connection Error</p>
+      <p class="ad-alert-text">{{ errorMessage() }}</p>
+    </div>
+    <button class="ad-alert-retry" (click)="loadDashboardStats()">Retry</button>
+  </div>
+  }
+
+  <!-- Loading Skeletons -->
+  @if (isLoading()) {
+  <div class="ad-skeleton-grid">
+    <div class="ad-skeleton-card"></div>
+    <div class="ad-skeleton-card"></div>
+    <div class="ad-skeleton-card"></div>
+    <div class="ad-skeleton-card"></div>
+  </div>
+  <div class="ad-skeleton-body-grid">
+    <div class="ad-skeleton-panel"></div>
+    <div class="ad-skeleton-panel"></div>
+  </div>
+  }
+
+  <!-- Dashboard Main Content -->
+  @if (!isLoading() && stats()) {
+
+  <!-- 1. Executive Master KPIs -->
+  <section class="ad-kpi-grid">
+
+    <!-- KPI 1: Total Approved Capital -->
+    <div class="ad-kpi-card ad-kpi-approved">
+      <div class="ad-kpi-header">
+        <span class="ad-kpi-label">Capital Approved & Committed</span>
+        <div class="ad-kpi-icon-wrap icon-green">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="ad-kpi-value-wrap">
+        <h2 class="ad-kpi-value">{{ stats()!.portfolio.totalCapitalApproved | number:'1.0-0' }} <span
+            class="ad-currency">DT</span></h2>
+      </div>
+      <div class="ad-kpi-footer">
+        <span class="ad-pill-badge badge-green">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          </svg>
+          {{ stats()!.portfolio.approvalRatePercent }}% Approved
+        </span>
+        <span class="ad-kpi-note">Active capital portfolio</span>
+      </div>
+    </div>
+
+    <!-- KPI 2: Total Requested Capital -->
+    <div class="ad-kpi-card ad-kpi-requested">
+      <div class="ad-kpi-header">
+        <span class="ad-kpi-label">Total Credit Demand</span>
+        <div class="ad-kpi-icon-wrap icon-blue">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </div>
+      </div>
+      <div class="ad-kpi-value-wrap">
+        <h2 class="ad-kpi-value">{{ stats()!.portfolio.totalCapitalRequested | number:'1.0-0' }} <span
+            class="ad-currency">DT</span></h2>
+      </div>
+      <div class="ad-kpi-footer">
+        <span class="ad-pill-badge badge-blue">
+          {{ totalActivePipelineCount() }} Active in Pipeline
+        </span>
+        <span class="ad-kpi-note">Cumulative volume</span>
+      </div>
+    </div>
+
+    <!-- KPI 3: Approval Rate Meter -->
+    <div class="ad-kpi-card ad-kpi-rate">
+      <div class="ad-kpi-header">
+        <span class="ad-kpi-label">Executive Approval Ratio</span>
+        <div class="ad-kpi-icon-wrap icon-purple">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="ad-kpi-value-wrap">
+        <h2 class="ad-kpi-value">{{ stats()!.portfolio.approvalRatePercent }}<span class="ad-unit">%</span></h2>
+      </div>
+      <div class="ad-kpi-footer">
+        <div class="ad-rate-bar-track">
+          <div class="ad-rate-bar-fill" [style.width.%]="stats()!.portfolio.approvalRatePercent"></div>
+        </div>
+        <span class="ad-kpi-note">Decision pass rate</span>
+      </div>
+    </div>
+
+    <!-- KPI 4: Terms & Pricing -->
+    <div class="ad-kpi-card ad-kpi-terms">
+      <div class="ad-kpi-header">
+        <span class="ad-kpi-label">Portfolio Terms & Pricing</span>
+        <div class="ad-kpi-icon-wrap icon-amber">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="ad-kpi-value-wrap">
+        <h2 class="ad-kpi-value">{{ stats()!.portfolio.avgInterestRate | number:'1.2-2' }}<span class="ad-unit">%</span>
+        </h2>
+      </div>
+      <div class="ad-kpi-footer">
+        <span class="ad-pill-badge badge-amber">
+          Avg. {{ stats()!.portfolio.avgApprovedDurationMonths | number:'1.0-0' }} Months
+        </span>
+        <span class="ad-kpi-note">Weighted mean rate</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2. Main Analytics Body -->
+  <div class="ad-grid-main">
+
+    <!-- Widget 1: Workflow Lifecycle Funnel & Bottlenecks -->
+    <div class="ad-panel ad-funnel-panel">
+      <div class="ad-panel-header">
+        <div class="ad-panel-title-wrap">
+          <h3 class="ad-panel-title">End-to-End Workflow Pipeline</h3>
+          <p class="ad-panel-desc">Real-time distribution of files across Flowable workflow stages</p>
+        </div>
+        <div class="ad-funnel-counter">
+          <span class="ad-counter-num">{{ totalActivePipelineCount() }}</span>
+          <span class="ad-counter-label">Active Loans</span>
+        </div>
+      </div>
+
+      @if (stats()!.pipelineFunnel.length === 0) {
+      <div class="ad-empty-state">
+        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="ad-empty-title">Pipeline Clear</p>
+        <p class="ad-empty-desc">No active loan applications currently in progress.</p>
+      </div>
+      } @else {
+      <div class="ad-funnel-list">
+        @for (stage of stats()!.pipelineFunnel; track stage.stageKey; let idx = $index) {
+        <div class="ad-stage-row" [style.--anim-delay]="idx * 0.08 + 's'">
+          <div class="ad-stage-info">
+            <div class="ad-stage-step-badge">{{ idx + 1 }}</div>
+            <div class="ad-stage-meta">
+              <span class="ad-stage-name">{{ stage.stageLabel }}</span>
+              <span class="ad-stage-task-key">{{ stage.stageKey }}</span>
+            </div>
+            <div class="ad-stage-figures">
+              <span class="ad-stage-amount">{{ stage.totalAmount | number:'1.0-0' }} DT</span>
+              <span class="ad-stage-pill">{{ stage.count }} {{ stage.count === 1 ? 'file' : 'files' }}</span>
+            </div>
+          </div>
+          <div class="ad-stage-track">
+            <div class="ad-stage-bar" [style.width.%]="getStagePercent(stage.totalAmount)" [style.--bar-index]="idx">
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Widget 2: Portfolio Mix by Loan Type -->
+    <div class="ad-panel ad-portfolio-panel">
+      <div class="ad-panel-header">
+        <div class="ad-panel-title-wrap">
+          <h3 class="ad-panel-title">Approved Portfolio Breakdown</h3>
+          <p class="ad-panel-desc">Committed capital allocation by credit category</p>
+        </div>
+      </div>
+
+      @if (stats()!.portfolioByType.length === 0) {
+      <div class="ad-empty-state">
+        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <p class="ad-empty-title">No Approved Loans Yet</p>
+        <p class="ad-empty-desc">Completed and approved loans will appear here.</p>
+      </div>
+      } @else {
+
+      <!-- Segmented Multi-Category Track -->
+      <div class="ad-category-bar-wrap">
+        <div class="ad-category-bar-track">
+          @for (item of stats()!.portfolioByType; track item.type; let idx = $index) {
+          <div class="ad-category-segment" [class]="getTypeBadgeClass(item.type)"
+            [style.width.%]="getPortfolioPercent(item.approvedAmount)"
+            [title]="formatLoanType(item.type) + ': ' + (item.approvedAmount | number) + ' DT (' + getPortfolioPercent(item.approvedAmount) + '%)'">
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Detail Category Rows -->
+      <div class="ad-type-list">
+        @for (item of stats()!.portfolioByType; track item.type; let idx = $index) {
+        <div class="ad-type-card" [style.--anim-delay]="idx * 0.1 + 's'">
+          <div class="ad-type-left">
+            <div class="ad-type-indicator" [class]="getTypeBadgeClass(item.type)"></div>
+            <div class="ad-type-name-wrap">
+              <span class="ad-type-title">{{ formatLoanType(item.type) }}</span>
+              <span class="ad-type-loans-count">{{ item.approvedCount }} approved {{ item.approvedCount === 1 ? 'loan' :
+                'loans' }}</span>
+            </div>
+          </div>
+          <div class="ad-type-right">
+            <div class="ad-type-finance">
+              <span class="ad-type-volume">{{ item.approvedAmount | number:'1.0-0' }} DT</span>
+              <span class="ad-type-share">{{ getPortfolioPercent(item.approvedAmount) }}% of total</span>
+            </div>
+            <span class="ad-type-rate-pill">{{ item.avgInterestRate | number:'1.2-2' }}% rate</span>
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+    </div>
+
+  </div>
+
+  }
+
+</div>
