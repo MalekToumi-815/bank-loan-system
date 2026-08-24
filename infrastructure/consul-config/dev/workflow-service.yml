@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/workflow_db
+    url: jdbc:postgresql://postgres:5432/workflow_db
     username: postgres
-    password: ${SPRING_DATASOURCE_PASSWORD:mlk123}
+    password: password123
     driver-class-name: org.postgresql.Driver
   rabbitmq:
     host: ${RABBITMQ_HOST:rabbitmq}  

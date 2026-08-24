@@ -1,1 +1,3 @@
 CREATE DATABASE account_db;
+CREATE DATABASE loan_db;
+CREATE DATABASE workflow_db;
