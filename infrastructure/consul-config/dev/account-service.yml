@@ -12,7 +12,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
   rabbitmq:
-    host: localhost  
+    host: ${RABBITMQ_HOST:rabbitmq}  
     port: 5672
     username: guest
     password: guest
