@@ -1,5 +1,7 @@
 package bank.loan.credit_service.config;
 
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,11 +19,21 @@ public class MinioConfig {
     @Value("${minio.secret-key}")
     private String secretKey;
 
+    @Value("${minio.bucket}")
+    private String bucketName;
+
     @Bean
-    public MinioClient minioClient() {
-        return MinioClient.builder()
+    public MinioClient minioClient() throws Exception {
+        MinioClient client = MinioClient.builder()
                 .endpoint(url)
                 .credentials(accessKey, secretKey)
                 .build();
+
+        boolean exists = client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!exists) {
+            client.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+
+        return client;
     }
 }
