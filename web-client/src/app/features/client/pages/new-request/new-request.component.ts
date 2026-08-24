@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ClientLoanService } from '../../services/client-loan.service';
+import { FormatRolePipe } from '../../../../shared/pipes/format-role.pipe';
 
 interface NewLoanForm {
   amount: number | null;
@@ -15,7 +16,7 @@ interface NewLoanForm {
 @Component({
   selector: 'app-new-request',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormatRolePipe],
   styleUrl: './new-request.component.css',
   template: `
     <section class="new-loan-page">
@@ -50,13 +51,13 @@ interface NewLoanForm {
             <div class="new-loan-field">
               <label for="type">Loan type</label>
               <select id="type" class="new-loan-input" [(ngModel)]="form().type" name="type">
-                <option value="PERSONAL_LOAN">PERSONAL_LOAN</option>
-                <option value="HOME_LOAN">HOME_LOAN</option>
-                <option value="CAR_LOAN">CAR_LOAN</option>
-                <option value="BUSINESS_LOAN">BUSINESS_LOAN</option>
-                <option value="STUDENT_LOAN">STUDENT_LOAN</option>
-                <option value="RENOVATION_LOAN">RENOVATION_LOAN</option>
-                <option value="AGRICULTURAL_LOAN">AGRICULTURAL_LOAN</option>
+                <option value="PERSONAL_LOAN">PERSONAL LOAN</option>
+                <option value="HOME_LOAN">HOME LOAN</option>
+                <option value="CAR_LOAN">CAR LOAN</option>
+                <option value="BUSINESS_LOAN">BUSINESS LOAN</option>
+                <option value="STUDENT_LOAN">STUDENT LOAN</option>
+                <option value="RENOVATION_LOAN">RENOVATION LOAN</option>
+                <option value="AGRICULTURAL_LOAN">AGRICULTURAL LOAN</option>
               </select>
             </div>
 
@@ -94,7 +95,7 @@ interface NewLoanForm {
             </div>
             <div class="new-loan-meta-row">
               <span>Selected type</span>
-              <strong>{{ form().type }}</strong>
+              <strong>{{ form().type | formatRole }}</strong>
             </div>
             <div class="new-loan-meta-row">
               <span>Requested amount</span>

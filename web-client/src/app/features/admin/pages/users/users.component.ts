@@ -6,11 +6,12 @@ import { AdminUserService, PaginatedUsersResponse } from '../../services/admin-u
 import { RegisterRequest, UserResponse } from '../../../auth/models/auth.model';
 import { UserRole } from '../../../../core/models/user-role.enum';
 import { UserStatus } from '../../../../core/models/user-status.enum';
+import { FormatRolePipe } from '../../../../shared/pipes/format-role.pipe';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormatRolePipe],
   styleUrl: './users.component.css',
   template: `
     <section class="admin-users-page">
@@ -88,7 +89,7 @@ import { UserStatus } from '../../../../core/models/user-status.enum';
                     <div class="admin-users-name">{{ user.name }} {{ user.surname }}</div>
                   </td>
                   <td>{{ user.email }}</td>
-                  <td>{{ user.role }}</td>
+                  <td>{{ user.role | formatRole }}</td>
                   <td>
                     <div class="admin-users-actions">
                       <span class="admin-users-status" [class.active]="user.status === 'ACTIVE'">
@@ -220,7 +221,7 @@ import { UserStatus } from '../../../../core/models/user-status.enum';
             </div>
             <div class="admin-users-field-row">
               <span>Role</span>
-              <strong>{{ selectedUser()?.role }}</strong>
+              <strong>{{ selectedUser()?.role | formatRole }}</strong>
             </div>
             <div class="admin-users-field-row">
               <span>Status</span>

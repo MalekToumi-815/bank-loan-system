@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { NotificationBellComponent } from '../../../shared/components/notification-bell/notification-bell.component';
+import { FormatRolePipe } from '../../../shared/pipes/format-role.pipe';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, NotificationBellComponent],
+  imports: [CommonModule, NotificationBellComponent, FormatRolePipe],
   styleUrl: './header.component.css',
   template: `
     <header class="app-header h-16 bg-slate-900 border-b border-slate-800 text-white px-6 flex items-center justify-between shadow-sm">
@@ -45,7 +46,7 @@ import { NotificationBellComponent } from '../../../shared/components/notificati
             </div>
             <!-- Role Badge -->
             <span class="role-badge ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              {{ user.role }}
+              {{ user.role | formatRole }}
             </span>
           </div>
         } @else {

@@ -6,11 +6,12 @@ import { ClientLoan } from '../../../client/models/client-loan.model';
 import { UserResponse } from '../../../auth/models/auth.model';
 import { DocumentListComponent } from '../../../../shared/components/document-list/document-list.component';
 import { AmortisationComponent } from '../../../../shared/components/amortisation/amortisation.component';
+import { FormatRolePipe } from '../../../../shared/pipes/format-role.pipe';
 
 @Component({
   selector: 'app-admin-loans',
   standalone: true,
-  imports: [CommonModule, FormsModule, DocumentListComponent, AmortisationComponent],
+  imports: [CommonModule, FormsModule, DocumentListComponent, AmortisationComponent, FormatRolePipe],
   styleUrl: './loans.component.css',
   template: `
     <section class="admin-loans-page">
@@ -296,7 +297,7 @@ import { AmortisationComponent } from '../../../../shared/components/amortisatio
                     <span class="admin-loans-assignee-id">ID: {{ user.id }}</span>
                     <span class="admin-loans-assignee-name">{{ user.name }} {{ user.surname }}</span>
                   </div>
-                  <span class="admin-loans-assignee-role">{{ user.role }}</span>
+                  <span class="admin-loans-assignee-role">{{ user.role | formatRole }}</span>
                 </div>
               } @empty {
                 <div class="admin-loans-state">No assignees found for this loan.</div>

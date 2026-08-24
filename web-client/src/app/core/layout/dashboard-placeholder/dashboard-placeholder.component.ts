@@ -2,11 +2,12 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../features/auth/services/auth.service';
+import { FormatRolePipe } from '../../../shared/pipes/format-role.pipe';
 
 @Component({
   selector: 'app-dashboard-placeholder',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormatRolePipe],
   styleUrl: './dashboard-placeholder.component.css',
   template: `
     <div class="max-w-5xl mx-auto space-y-6">
@@ -25,7 +26,7 @@ import { AuthService } from '../../../features/auth/services/auth.service';
               Welcome back, {{ currentUser()?.name || 'User' }}!
             </h2>
             <p class="hero-subtitle text-slate-400 text-sm max-w-xl leading-relaxed">
-              You are currently authenticated as a <span class="text-blue-400 font-semibold">{{ currentUser()?.role || 'Guest' }}</span>. Select options from the sidebar to manage your requests and account.
+              You are currently authenticated as a <span class="text-blue-400 font-semibold">{{ currentUser()?.role | formatRole }}</span>. Select options from the sidebar to manage your requests and account.
             </p>
           </div>
 
@@ -34,7 +35,7 @@ import { AuthService } from '../../../features/auth/services/auth.service';
               <span class="text-xs text-slate-400 font-medium block">Active Session</span>
               <span class="text-sm font-bold text-slate-100 block truncate">{{ user.email }}</span>
               <span class="mt-2 inline-block px-2.5 py-0.5 text-xs font-bold rounded-md bg-blue-600/20 text-blue-300 border border-blue-500/30 uppercase">
-                {{ user.role }}
+                {{ user.role | formatRole }}
               </span>
             </div>
           }

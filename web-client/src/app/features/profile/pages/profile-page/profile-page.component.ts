@@ -5,11 +5,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../auth/services/auth.service';
 import { UserResponse } from '../../../auth/models/auth.model';
 import { ProfileService } from '../../services/profile.service';
+import { FormatRolePipe } from '../../../../shared/pipes/format-role.pipe';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormatRolePipe],
   styleUrl: './profile-page.component.css',
   template: `
     <section class="profile-page">
@@ -65,7 +66,7 @@ import { ProfileService } from '../../services/profile.service';
           <div class="profile-account-list">
             <div class="profile-account-row">
               <span>Role</span>
-              <strong>{{ currentUser()?.role || 'Client' }}</strong>
+              <strong>{{ currentUser()?.role | formatRole }}</strong>
             </div>
             <div class="profile-account-row">
               <span>User ID</span>

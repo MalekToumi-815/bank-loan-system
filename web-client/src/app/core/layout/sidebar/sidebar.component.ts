@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { NAV_ITEMS, NavItem } from '../../config/nav.config';
+import { FormatRolePipe } from '../../../shared/pipes/format-role.pipe';
 
 interface NavGroup {
   title?: string;
@@ -13,7 +14,7 @@ interface NavGroup {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormatRolePipe],
   styleUrl: './sidebar.component.css',
   template: `
     <aside class="app-sidebar w-64 bg-[#091222] border-r border-slate-800/80 flex flex-col justify-between p-4 h-[calc(100vh-4rem)] overflow-y-auto shrink-0 select-none">
@@ -79,7 +80,7 @@ interface NavGroup {
               </div>
               <p class="text-xs font-semibold text-slate-300 mb-1">No Links Configured</p>
               <p class="text-[11px] text-slate-500 leading-relaxed">
-                No navigation items configured for role <span class="font-medium text-slate-400">{{ activeRole() || 'GUEST' }}</span>.
+                No navigation items configured for role <span class="font-medium text-slate-400">{{ activeRole() | formatRole }}</span>.
               </p>
             </div>
           }
