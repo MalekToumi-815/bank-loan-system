@@ -9,11 +9,15 @@ services:
   # INFRASTRUCTURE
   # ==========================================
   consul:
-    image: hashicorp/consul:latest
+    image: hashicorp/consul:1.15.4
     container_name: consul
     ports:
       - "8500:8500"
-    command: "agent -dev -client=0.0.0.0"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
     networks:
       - bank-network
 
@@ -38,25 +42,43 @@ services:
     command: server /data --console-address ":9001"
     networks:
       - bank-network
+  
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    volumes:
+      - ./infrastructure/postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - bank-network
 
   # Helper service to auto-load YAML files into Consul KV on boot
   consul-init:
-    image: hashicorp/consul:latest
+    image: hashicorp/consul:1.15.4
     container_name: consul-init
     depends_on:
-      - consul
+      consul:
+        condition: service_healthy
     networks:
       - bank-network
     volumes:
       - ./infrastructure/consul-config:/consul-config
-    entrypoint: >
+    entrypoint: |
       /bin/sh -c "
-      echo 'Waiting for Consul...';
-      until nc -z consul 8500; do sleep 1; done;
-      
-      echo 'Populating Consul Key-Value store...';
-      
-      # Upload Local Profile Configs
+      set -e
+
+      echo 'Waiting for Consul HTTP API to accept writes...'
+      until consul kv put -http-addr=http://consul:8500 config/health_check 'ok' > /dev/null 2>&1; do
+        sleep 1
+      done
+      consul kv delete -http-addr=http://consul:8500 config/health_check > /dev/null 2>&1
+
+      echo 'Populating Consul Key-Value store...'
+
       consul kv put -http-addr=http://consul:8500 config/application,local/data @/consul-config/local/application.yml
       consul kv put -http-addr=http://consul:8500 config/account-service,local/data @/consul-config/local/account-service.yml
       consul kv put -http-addr=http://consul:8500 config/credit-service,local/data @/consul-config/local/credit-service.yml
@@ -65,7 +87,6 @@ services:
       consul kv put -http-addr=http://consul:8500 config/oauth-service,local/data @/consul-config/local/oauth-service.yml
       consul kv put -http-addr=http://consul:8500 config/workflow-service,local/data @/consul-config/local/workflow-service.yml
 
-      # Upload Dev Profile Configs
       consul kv put -http-addr=http://consul:8500 config/application,dev/data @/consul-config/dev/application.yml
       consul kv put -http-addr=http://consul:8500 config/account-service,dev/data @/consul-config/dev/account-service.yml
       consul kv put -http-addr=http://consul:8500 config/credit-service,dev/data @/consul-config/dev/credit-service.yml
@@ -74,40 +95,12 @@ services:
       consul kv put -http-addr=http://consul:8500 config/oauth-service,dev/data @/consul-config/dev/oauth-service.yml
       consul kv put -http-addr=http://consul:8500 config/workflow-service,dev/data @/consul-config/dev/workflow-service.yml
 
-      echo 'Consul configuration loaded successfully!';"
+      echo 'Consul configuration loaded successfully!'
+      "
 
   # ==========================================
   # MICROSERVICES
   # ==========================================
-  gateway-service:
-    build: ./services/gateway-service
-    container_name: gateway-service
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-      - ANGULAR_APP_URL=${ANGULAR_APP_URL}
-    depends_on:
-      consul-init:
-        condition: service_completed_successfully
-    networks:
-      - bank-network
-
-  oauth-service:
-    build: ./services/oauth-service
-    container_name: oauth-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-    depends_on:
-      consul-init:
-        condition: service_completed_successfully
-    networks:
-      - bank-network
-
   account-service:
     build: ./services/account-service
     container_name: account-service
@@ -115,55 +108,89 @@ services:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - SPRING_CLOUD_CONSUL_HOST=consul
       - SPRING_CLOUD_CONSUL_PORT=8500
+      - INTERNAL_SHARED_SECRET=${INTERNAL_SHARED_SECRET}
     depends_on:
       consul-init:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_started
+      postgres:
+        condition: service_started
+    restart: on-failure
     networks:
       - bank-network
 
-  credit-service:
-    build: ./services/credit-service
-    container_name: credit-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-    depends_on:
-      consul-init:
-        condition: service_completed_successfully
-      minio:
-        condition: service_started
-    networks:
-      - bank-network
+  # gateway-service:
+  #   build: ./services/gateway-service
+  #   container_name: gateway-service
+  #   ports:
+  #     - "8083:8083"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  #     - SPRING_CLOUD_CONSUL_HOST=consul
+  #     - SPRING_CLOUD_CONSUL_PORT=8500
+  #     - ANGULAR_APP_URL=${ANGULAR_APP_URL}
+  #   depends_on:
+  #     consul-init:
+  #       condition: service_completed_successfully
+  #   networks:
+  #     - bank-network
 
-  workflow-service:
-    build: ./services/workflow-service
-    container_name: workflow-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-    depends_on:
-      consul-init:
-        condition: service_completed_successfully
-      rabbitmq:
-        condition: service_started
-    networks:
-      - bank-network
+  # oauth-service:
+  #   build: ./services/oauth-service
+  #   container_name: oauth-service
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  #     - SPRING_CLOUD_CONSUL_HOST=consul
+  #     - SPRING_CLOUD_CONSUL_PORT=8500
+  #   depends_on:
+  #     consul-init:
+  #       condition: service_completed_successfully
+  #   networks:
+  #     - bank-network
 
-  notification-service:
-    build: ./services/notification-service
-    container_name: notification-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_CLOUD_CONSUL_HOST=consul
-      - SPRING_CLOUD_CONSUL_PORT=8500
-    depends_on:
-      consul-init:
-        condition: service_completed_successfully
-      rabbitmq:
-        condition: service_started
-    networks:
-      - bank-network
+
+  # credit-service:
+  #   build: ./services/credit-service
+  #   container_name: credit-service
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  #     - SPRING_CLOUD_CONSUL_HOST=consul
+  #     - SPRING_CLOUD_CONSUL_PORT=8500
+  #   depends_on:
+  #     consul-init:
+  #       condition: service_completed_successfully
+  #     minio:
+  #       condition: service_started
+  #   networks:
+  #     - bank-network
+
+  # workflow-service:
+  #   build: ./services/workflow-service
+  #   container_name: workflow-service
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  #     - SPRING_CLOUD_CONSUL_HOST=consul
+  #     - SPRING_CLOUD_CONSUL_PORT=8500
+  #   depends_on:
+  #     consul-init:
+  #       condition: service_completed_successfully
+  #     rabbitmq:
+  #       condition: service_started
+  #   networks:
+  #     - bank-network
+
+  # notification-service:
+  #   build: ./services/notification-service
+  #   container_name: notification-service
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  #     - SPRING_CLOUD_CONSUL_HOST=consul
+  #     - SPRING_CLOUD_CONSUL_PORT=8500
+  #   depends_on:
+  #     consul-init:
+  #       condition: service_completed_successfully
+  #     rabbitmq:
+  #       condition: service_started
+  #   networks:
+  #     - bank-network
