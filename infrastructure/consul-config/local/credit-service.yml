@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/loan_db
+    url: jdbc:postgresql://postgres:5432/loan_db
     username: postgres
-    password: ${SPRING_DATASOURCE_PASSWORD:mlk123}
+    password: password123
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -13,7 +13,7 @@ spring:
     open-in-view: false
 
 minio:
-  url: http://localhost:9000
+  url: http://minio:9000
   access-key: minioadmin
   secret-key: minioadminpassword
   bucket: loan-documents

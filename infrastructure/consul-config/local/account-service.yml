@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/account_db
+    url: jdbc:postgresql://postgres:5432/account_db
     username: postgres
-    password: ${SPRING_DATASOURCE_PASSWORD:mlk123}
+    password: password123
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -12,7 +12,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
   rabbitmq:
-    host: localhost  
+    host: ${RABBITMQ_HOST:rabbitmq}  
     port: 5672
     username: guest
     password: guest
