@@ -120,21 +120,23 @@ services:
     networks:
       - bank-network
 
-  # gateway-service:
-  #   build: ./services/gateway-service
-  #   container_name: gateway-service
-  #   ports:
-  #     - "8083:8083"
-  #   environment:
-  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-  #     - SPRING_CLOUD_CONSUL_HOST=consul
-  #     - SPRING_CLOUD_CONSUL_PORT=8500
-  #     - ANGULAR_APP_URL=${ANGULAR_APP_URL}
-  #   depends_on:
-  #     consul-init:
-  #       condition: service_completed_successfully
-  #   networks:
-  #     - bank-network
+  gateway-service:
+    build: ./services/gateway-service
+    container_name: gateway-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - ANGULAR_APP_URL=${ANGULAR_APP_URL}
+      - INTERNAL_SHARED_SECRET=${INTERNAL_SHARED_SECRET}
+    depends_on:
+      consul-init:
+        condition: service_completed_successfully
+    restart: on-failure
+    networks:
+      - bank-network
 
   # oauth-service:
   #   build: ./services/oauth-service
