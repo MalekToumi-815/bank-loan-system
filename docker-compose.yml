@@ -203,3 +203,15 @@ services:
         condition: service_started
     networks:
       - bank-network
+
+  web-client:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+    container_name: web-client
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway-service
+    networks:
+      - bank-network
