@@ -11,10 +11,10 @@ spring:
         max-concurrency: 3
 
   mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: 4f7baa9c480282
-    password: 95ede2c76c50d1
+    host: ${MAILTRAP_HOST}
+    port: ${MAILTRAP_PORT}
+    username: ${MAILTRAP_USERNAME}
+    password: ${MAILTRAP_PASSWORD}
     properties:
       mail:
         smtp:
